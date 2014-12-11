@@ -7,4 +7,7 @@ public class StringResponse {
 
     public String response;
 
+    public String toString() {
+        return response;
+    }
 }

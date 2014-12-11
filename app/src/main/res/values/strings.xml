@@ -4,5 +4,18 @@
     <string name="app_name">Matchflare</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_notification">NotificationActivity</string>
+    <string name="action_notifications">Notifications</string>
+    <string name="title_activity_evaluate">EvaluateActivity</string>
+    <string name="notif_title">New Notification from Matchflare!</string>
+    <string name="title_activity_chat">ChatActivity</string>
+    <string name="crash_toast_text">You are too hot to handle. The application has crashed--please try again.</string>
+    <string name="title_activity_registration">RegistrationActivity</string>
+    <string name="title_activity_verification">VerificationActivity</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="cancel_sms">Cancel</string>
+    <string name="title_activity_crop_image">CropImageActivity</string>
+    <string name="title_activity_splash">SplashActivity</string>
 
 </resources>

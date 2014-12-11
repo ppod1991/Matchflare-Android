@@ -42,7 +42,7 @@ public class GCMBroadcastReceiverCompat extends BroadcastReceiver implements Cal
 
             GCMRegistrarCompat.setRegistrationId(context,regId);
 
-            Toast.makeText(context,regId,Toast.LENGTH_LONG);
+            //Toast.makeText(context,regId,Toast.LENGTH_LONG);
             Log.e("Registration ID", regId);
 
             RestAdapter restAdapter = new RestAdapter.Builder()

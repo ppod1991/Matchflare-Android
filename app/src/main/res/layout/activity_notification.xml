@@ -1,0 +1,29 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.peapod.matchflare.NotificationActivity"
+    android:background="@color/matchflare_gray"
+    android:measureWithLargestChild="false">
+
+    <ExpandableListView
+        android:id="@+id/notifications_list"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:divider="@color/white"
+        android:dividerHeight="0.25dp"
+        android:childDivider="@color/light_gray">
+    </ExpandableListView>
+
+    <!--<ListView-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="248dp"-->
+        <!--android:id="@+id/notifications_list"/>-->
+
+    <!--<ListView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:id="@+id/pending_matches_list" />-->
+
+</LinearLayout>

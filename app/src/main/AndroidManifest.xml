@@ -2,49 +2,103 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.peapod.matchflare" >
 
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <permission
+        android:name="com.peapod.matchflare.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.peapod.matchflare.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PROFILE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
     <application
+        android:name="com.peapod.matchflare.Global"
         android:allowBackup="true"
-        android:name=".Global"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".PresentMatchesActivity"
-            android:label="@string/app_name" >
+            android:name="com.peapod.matchflare.PresentMatchesActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden">
+        </activity>
+
+        <receiver
+            android:name="com.peapod.matchflare.GCMBroadcastReceiverCompat"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+
+                <category android:name="com.peapod.matchflare" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name="com.peapod.matchflare.GCMIntentService" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name="com.peapod.matchflare.NotificationActivity"
+            android:label="Matchflare"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity
+            android:name="com.peapod.matchflare.EvaluateActivity"
+            android:label="Matchflare"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity
+            android:name="com.peapod.matchflare.ChatActivity"
+            android:label="Matchflare"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <!-- <activity -->
+        <!-- android:name="com.peapod.matchflare.RegistrationActivity" -->
+        <!-- android:label="Matchflare" > -->
+
+
+        <!-- </activity> -->
+        <activity
+            android:name="com.peapod.matchflare.VerificationActivity"
+            android:label="Matchflare"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden">
+
+        </activity>
+
+        <activity
+            android:name="com.peapod.matchflare.CropImageActivity"
+            android:label="@string/title_activity_crop_image"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity
+            android:name="com.peapod.matchflare.SplashActivity"
+            android:label="Matchflare"
+            android:theme="@android:style/Theme.NoTitleBar" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
-
-        <receiver
-            android:name="com.peapod.matchflare.GCMBroadcastReceiverCompat" android:permission="com.google.android.c2dm.permission.SEND">
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
-                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-
-                <category android:name="com.peapod.matchflare"/>
-            </intent-filter>
-        </receiver>
-
-        <service android:name=".GCMIntentService"/>
-
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
-
     </application>
-
-
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <permission
-        android:name="com.peapod.matchflare.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
-    <uses-permission android:name="com.peapod.matchflare.permission.C2D_MESSAGE"/>
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-
 
 </manifest>

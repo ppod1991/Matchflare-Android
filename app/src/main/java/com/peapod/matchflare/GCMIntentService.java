@@ -14,11 +14,20 @@ package com.peapod.matchflare;
  http://commonsware.com/Android
  */
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 public class GCMIntentService extends GCMBaseIntentServiceCompat {
+
+    private static int NOTIFY_ID=1337;
+
     public GCMIntentService() {
         super("GCMIntentService");
     }
@@ -39,12 +48,33 @@ public class GCMIntentService extends GCMBaseIntentServiceCompat {
     }
 
     private void dumpEvent(String event, Intent message) {
-        Bundle extras=message.getExtras();
 
-        for (String key : extras.keySet()) {
-            Log.d(getClass().getSimpleName(),
-                    String.format("%s: %s=%s", event, key,
-                            extras.getString(key)));
+        Intent intent=new Intent(Global.ACTION_EVENT);
+        String jsonData = message.getStringExtra("data");
+        Gson gson = new Gson();
+        Notification notification = gson.fromJson(jsonData,Notification.class);
+        intent.putExtra("notification", notification);
+        if (!LocalBroadcastManager.getInstance(this).sendBroadcast(intent)) {
+            NotificationCompat.Builder b = new NotificationCompat.Builder(this);
+            Intent ui = new Intent(this, NotificationActivity.class);
+            b.setAutoCancel(true)
+                    .setDefaults(android.app.Notification.DEFAULT_SOUND)
+                    .setContentTitle(getString(R.string.notif_title))
+                    .setContentText(notification.push_message)
+                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setTicker(getString(R.string.notif_title))
+                    .setContentIntent(PendingIntent.getActivity(this, 0, ui, 0));
+
+            NotificationManager mgr =
+                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            mgr.notify(NOTIFY_ID, b.build());
         }
+//        Bundle extras=message.getExtras();
+//        for (String key : extras.keySet()) {
+//            Log.d(getClass().getSimpleName(),
+//                    String.format("%s: %s=%s", event, key,
+//                            extras.getString(key)));
+//
+//        }
     }
 }

@@ -17,9 +17,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
 }
 
 repositories {
+    mavenCentral()
     maven {
         url "https://repo.commonsware.com.s3.amazonaws.com"
     }
@@ -33,4 +40,10 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.7.1'
     compile 'com.google.android.gms:play-services:6.1.+'
     compile 'com.commonsware.cwac:wakeful:1.0.+'
+    compile files('libs/autobahn-0.5.0.jar')
+    compile files('libs/aws-android-sdk-2.1.5-s3.jar')
+    compile 'com.edmodo:cropper:1.0.1'
+    compile files('libs/aws-android-sdk-2.1.5-core.jar')
+    compile files('libs/aws-android-sdk-2.1.5-cognito.jar')
+    compile 'com.makeramen:roundedimageview:1.5.0'
 }

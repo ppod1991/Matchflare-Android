@@ -1,68 +1,168 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_present_matches"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/matchflare_gray"
     tools:context=".PresentMatches">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
-        android:id="@+id/first_contact_textview"
-        android:layout_marginTop="97dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:textSize="30dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
-        android:id="@+id/second_contact_textview"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:textSize="30dp" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Match"
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:id="@+id/match_button"
-        android:layout_alignParentBottom="true"
+        android:src="@drawable/match_button"
+        android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pass"
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:id="@+id/pass_button"
-        android:layout_alignParentBottom="true"
+        android:src="@drawable/pass_button"
+        android:layout_centerVertical="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Match"-->
+        <!--android:id="@+id/match_button_2"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_alignParentEnd="true" />-->
+
+    <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Pass"-->
+        <!--android:id="@+id/pass_button_2"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentStart="true" />-->
 
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="match anonymously"
         android:id="@+id/anonymous_checkbox"
-        android:layout_above="@+id/match_button"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:textSize="12sp"
+        android:textColor="@color/light_gray"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Who's the better catch?"
-        android:id="@+id/elo_instructions"
-        android:layout_below="@+id/first_contact_textview"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="42dp"
-        android:visibility="invisible" />
+        android:text="should they meet?"
+        android:id="@+id/instructions_results"
+        android:visibility="visible"
+        android:textColor="@color/light_gray"
+        android:textSize="13sp"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextSwitcher
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Get ready to match."
+        android:id="@+id/result_text"
+        android:visibility="visible"
+        android:textColor="@color/matchflare_pink"
+        android:textSize="15sp"
+        android:alpha="0.8"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+
+    <!--<LinearLayout-->
+        <!--android:orientation="vertical"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="fill_parent"-->
+        <!--android:id="@+id/next_match_view">-->
+        <!--android:layout_weight="2"-->
+
+        <!--<RelativeLayout-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="0px"-->
+            <!--android:layout_weight="1">-->
+
+            <!--<ImageView xmlns:app="http://schemas.android.com/apk/res-auto"-->
+                <!--android:layout_width="fill_parent"-->
+                <!--android:id="@+id/next_first_matchee_image_view"-->
+                <!--android:src="@drawable/choose_profile_picture_square"-->
+                <!--android:layout_height="fill_parent"-->
+                <!--android:layout_margin="15dp" />-->
+
+            <!--<com.makeramen.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"-->
+                <!--android:layout_width="fill_parent"-->
+                <!--android:id="@+id/gradient_3"-->
+                <!--android:src="@drawable/gradient"-->
+                <!--android:scaleType="fitCenter"-->
+                <!--app:riv_corner_radius="30dip"-->
+                <!--app:riv_mutate_background="true"-->
+                <!--app:riv_oval="true"-->
+                <!--android:layout_height="fill_parent"-->
+                <!--android:layout_margin="15dp" />-->
+
+            <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:textAppearance="?android:attr/textAppearanceMedium"-->
+                <!--android:text="Medium Text"-->
+                <!--android:id="@+id/next_first_contact_textview"-->
+                <!--android:textSize="30dp"-->
+                <!--android:layout_alignBottom="@+id/next_first_matchee_image_view"-->
+                <!--android:layout_centerHorizontal="true"-->
+                <!--android:layout_marginBottom="15dp"-->
+                <!--android:textColor="@color/white"/>-->
+        <!--</RelativeLayout>-->
+
+        <!--<RelativeLayout-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="0px"-->
+            <!--android:layout_weight="1"-->
+            <!-->-->
+
+            <!--<ImageView xmlns:app="http://schemas.android.com/apk/res-auto"-->
+                <!--android:layout_width="fill_parent"-->
+                <!--android:id="@+id/next_second_matchee_image_view"-->
+                <!--android:src="@drawable/choose_profile_picture_square"-->
+                <!--android:layout_height="fill_parent"-->
+                <!--android:layout_margin="15dp" />-->
+
+            <!--<com.makeramen.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"-->
+                <!--android:layout_width="fill_parent"-->
+                <!--android:id="@+id/gradient_4"-->
+                <!--android:src="@drawable/gradient"-->
+                <!--android:scaleType="fitCenter"-->
+                <!--app:riv_corner_radius="30dip"-->
+                <!--app:riv_mutate_background="true"-->
+                <!--app:riv_oval="true"-->
+                <!--android:layout_height="fill_parent"-->
+                <!--android:layout_margin="15dp" />-->
+
+            <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:textAppearance="?android:attr/textAppearanceMedium"-->
+                <!--android:text="Medium Text"-->
+                <!--android:id="@+id/next_second_contact_textview"-->
+                <!--android:textSize="30dp"-->
+                <!--android:layout_alignBottom="@+id/next_second_matchee_image_view"-->
+                <!--android:layout_centerHorizontal="true"-->
+                <!--android:layout_marginBottom="15dp"-->
+                <!--android:textColor="@color/white"/>-->
+
+        <!--</RelativeLayout>-->
+
+    <!--</LinearLayout>-->
+
 </RelativeLayout>
