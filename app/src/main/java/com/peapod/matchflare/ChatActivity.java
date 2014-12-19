@@ -15,14 +15,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+
+import org.w3c.dom.Text;
 
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
@@ -36,28 +40,42 @@ public class ChatActivity extends Activity {
     private ChatArrayAdapter chatArrayAdapter;
     private ListView listView;
     private EditText chatText;
-    private Button buttonSend;
-
-    private static final WebSocketConnection mConnection = new WebSocketConnection();
+    private ImageView buttonSend;
+    private Match thisMatch;
+    private WebSocketConnection mConnection = new WebSocketConnection();
     private Handler mHandler;
     private Gson gson = new Gson();
     private int chat_id;
+    private int pair_id;
+    private TextView chatDescription;
+
+    View progressIndicator;
+    View root;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        progressIndicator = findViewById(R.id.progress_indicator);
+        root = findViewById(R.id.root_chat);
+
+        chatDescription = (TextView) findViewById(R.id.chat_description);
+        Style.toOpenSans(this,chatDescription,"Light");
+        chatDescription.setVisibility(View.INVISIBLE);
+
+        progressIndicator.setVisibility(View.VISIBLE);
+        root.setVisibility(View.GONE);
+
         Bundle extras = this.getIntent().getExtras();
         chat_id = extras.getInt("chat_id");
-
-        buttonSend = (Button) findViewById(R.id.buttonSend);
+        pair_id = extras.getInt("pair_id");
+        buttonSend = (ImageView) findViewById(R.id.buttonSend);
         listView = (ListView) findViewById(R.id.chat_list_view);
 
-        chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.other_chat_message);
-        listView.setAdapter(chatArrayAdapter);
 
         chatText = (EditText) findViewById(R.id.chatText);
+        Style.toOpenSans(this,chatText,"light");
         chatText.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
@@ -71,18 +89,6 @@ public class ChatActivity extends Activity {
             @Override
             public void onClick(View arg0) {
                 sendChatMessage();
-            }
-        });
-
-        listView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
-        listView.setAdapter(chatArrayAdapter);
-
-        //to scroll the list view to bottom on data change
-        chatArrayAdapter.registerDataSetObserver(new DataSetObserver() {
-            @Override
-            public void onChanged() {
-                super.onChanged();
-                listView.setSelection(chatArrayAdapter.getCount() - 1);
             }
         });
 
@@ -148,6 +154,51 @@ public class ChatActivity extends Activity {
         }
     };
 
+    public void setChatDescription(Match m) {
+        int thisUserContactId = ((Global) getApplication()).thisUser.contact_id;
+        String description = "";
+        chatDescription.setVisibility(View.VISIBLE);
+        if (m.chat_id == chat_id) {  //If this is the main chat
+            if (m.first_matchee.contact_id == thisUserContactId) {  //Which user is the current user
+                description = "Chat with " + m.second_matchee.guessed_full_name + "!";
+            }
+            else if (m.second_matchee.contact_id == thisUserContactId) {
+                description = "Chat with " + m.first_matchee.guessed_full_name + "!";
+            }
+
+        }
+        else if (m.first_matchee.matcher_chat_id == chat_id || m.second_matchee.matcher_chat_id == chat_id)  { //If this is a chat with the matcher...
+            if (m.first_matchee.contact_id == thisUserContactId) {  //If this user is asking the matcher (and is first matchee)
+                if (m.is_anonymous) {
+                    description = "Ask your matcher about " + m.second_matchee.guessed_full_name + "!";
+                }
+                else {
+                    description = "Ask " + m.matcher.guessed_full_name + " about " + m.second_matchee.guessed_full_name + "!";
+                }
+            }
+            else if (m.second_matchee.contact_id == thisUserContactId) { //If this user is asking the matcher (and is second matchee)
+                if (m.is_anonymous) {
+                    description = "Ask your matcher about " + m.first_matchee.guessed_full_name + "!";
+                }
+                else {
+                    description = "Ask " + m.matcher.guessed_full_name + " about " + m.first_matchee.guessed_full_name + "!";
+                }
+            }
+            else if (m.matcher.contact_id == thisUserContactId) { //If this user is the matcher
+                    if (m.first_matchee.matcher_chat_id == chat_id) { //Determine which matchee the other chatter is
+                        description = "Answer questions from " + m.first_matchee.guessed_full_name + " about " + m.second_matchee.guessed_full_name + "!";
+                    }
+                    else if (m.second_matchee.matcher_chat_id == chat_id) {
+                        description = "Answer questions from " + m.second_matchee.guessed_full_name + " about " + m.first_matchee.guessed_full_name + "!";
+                    }
+            }
+        }
+        else {  //If this is a rogue user not in the match!!
+            chatDescription.setVisibility(View.GONE);
+        }
+
+        chatDescription.setText(description);
+    }
     /*
      * Initiates a web-socket connection to send the node path to company
      */
@@ -156,7 +207,8 @@ public class ChatActivity extends Activity {
         final String wsuri = "ws://matchflare.herokuapp.com/liveChat";
 
         try {
-            mConnection.connect(wsuri, new WebSocketHandler() {
+
+            WebSocketHandler wsHandler = new WebSocketHandler() {
 
                 @Override
                 public void onOpen() {
@@ -164,6 +216,7 @@ public class ChatActivity extends Activity {
                     ChatMessage initialMessage = new ChatMessage();
                     initialMessage.type = "set_chat_id";
                     initialMessage.chat_id = chat_id;
+                    initialMessage.pair_id = pair_id;
                     initialMessage.sender_contact_id = ((Global) getApplication()).thisUser.contact_id;
                     String JSONMessage = gson.toJson(initialMessage);
                     mConnection.sendTextMessage(JSONMessage);
@@ -178,10 +231,54 @@ public class ChatActivity extends Activity {
                     Log.d(TAG, "Got echo: " + payload);
                     ChatMessage m = gson.fromJson(payload, ChatMessage.class);
                     if (m.type.equals("history")) {
+
+                        if (m.pair.is_anonymous) {
+                            //chatArrayAdapter.setAnonymousID(m.pair.matcher.contact_id);
+                            chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.other_chat_message,m.pair.matcher.contact_id);
+                        }
+                        else {
+                            chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.other_chat_message,0);
+                        }
+
+                        listView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+                        listView.setAdapter(chatArrayAdapter);
+                        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position,
+                                                    long id) {
+                                //Show date on click
+                                TextView dateStamp = (TextView) view.findViewById(R.id.date_field);
+                                if (dateStamp.getVisibility() == View.VISIBLE) {
+                                    dateStamp.setVisibility(View.INVISIBLE);
+                                }
+                                else {
+                                    dateStamp.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        });
+
+                        //to scroll the list view to bottom on data change
+                        chatArrayAdapter.registerDataSetObserver(new DataSetObserver() {
+                            @Override
+                            public void onChanged() {
+                                super.onChanged();
+                                listView.setSelection(chatArrayAdapter.getCount() - 1);
+                            }
+                        });
+                        
                         chatArrayAdapter.chatMessageList = m.history;
+                        thisMatch = m.pair;
+                        listView.setSelection(chatArrayAdapter.getCount() - 1);
+                        progressIndicator.setVisibility(View.GONE);
+                        root.setVisibility(View.VISIBLE);
+                        ChatActivity.this.setChatDescription(thisMatch);
                     }
                     else if (m.type.equals("message")) {
                         chatArrayAdapter.add(m);
+                    }
+                    else if (m.type.equals("error")) {
+                        Style.makeToast(ChatActivity.this, "Error receiving messages and/or chat history. Try again!");
                     }
 
                 }
@@ -194,10 +291,38 @@ public class ChatActivity extends Activity {
                     }
 
                 }
-            });
+            };
+
+            if (mConnection == null) {
+                mConnection = new WebSocketConnection();
+                mConnection.connect(wsuri, wsHandler);
+            }
+            else {
+                if (mConnection.isConnected()) {
+                    mConnection.disconnect();
+
+                    mConnection.connect(wsuri,wsHandler);
+                }
+                else {
+                    mConnection.connect(wsuri, wsHandler);
+                }
+            }
+
+
+
         } catch (WebSocketException e) {
 
             Log.e("Failed to start websocket!!", e.toString());
+            Style.makeToast(ChatActivity.this,"Failed to start chat: " + e.getLocalizedMessage());
         }
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        super.onRestoreInstanceState(savedInstanceState);
+        Intent i = new Intent(this,SplashActivity.class);
+        startActivity(i);
+        finish();
     }
 }

@@ -29,7 +29,7 @@ public interface RestService {
         void getMatch(@QueryMap Map<String, Integer> options, Callback<Match> cb);
 
         @POST("/postMatch")
-        void addMatch(@Body Match match, @QueryMap Map<String, Integer> options, Callback<StringResponse> cb);
+        void addMatch(@Body Match match, @QueryMap Map<String, Integer> options, Callback<Integer> cb);
 
         @POST("/gcm/registrationId")
         void updateRegistrationId(@Body Person person, Callback<StringResponse> cb);
@@ -57,4 +57,23 @@ public interface RestService {
 
         @GET("/verifyAccessToken")
         void verifyAccessToken(@QueryMap Map<String, String> options, Callback<Person> cb);
+
+        @GET("/pictureURL")
+        void getPicture(@QueryMap Map<String, String> options, Callback<StringResponse> cb);
+
+        @GET("/getScore")
+        void getScore(@QueryMap Map<String, Integer> options, Callback<Integer> cb);
+
+        @GET("/hasUnread")
+        void hasUnread(@QueryMap Map<String, Integer> options, Callback<Boolean> cb);
+
+        @POST("/removeContact")
+        void removeContact(@QueryMap Map<String, Integer> options, Callback<StringResponse> cb);
+
+        @POST("/blockContact")
+        void blockContact(@QueryMap Map<String, Integer> options, Callback<StringResponse> cb);
+
+        @POST("/updateProfile")
+        void updateProfile(@Body Person this_user, Callback<Person> cb);
+
 }

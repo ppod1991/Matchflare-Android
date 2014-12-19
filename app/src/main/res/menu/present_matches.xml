@@ -1,8 +1,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".PresentMatches" >
-    <item android:id="@+id/notifications"
+    <item android:id="@+id/notifications_icon"
+        android:actionLayout="@layout/notification_badge"
         android:icon="@drawable/ic_whatshot_white_48dp"
         android:title="@string/action_notifications"
         android:showAsAction="always"/>
+    <item
+        android:id="@+id/menu_overflow"
+        android:icon="@drawable/ic_more_vert_grey600_48dp"
+        android:orderInCategory="11111"
+        android:title="more options..."
+        android:showAsAction="always">
+        <menu>
+            <item android:id="@+id/update_profile"
+                android:title="Update Profile"
+                android:showAsAction="never"/>
+        </menu>
+    </item>
+
 </menu>

@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -50,9 +51,9 @@ public class CropImageActivity extends Activity implements Button.OnClickListene
 
     Uri outputFileUri;
     CropImageView image;
-    Button newImageButton;
-    Button rotateButton;
-    Button uploadButton;
+    ImageButton newImageButton;
+    ImageButton rotateButton;
+    ImageButton uploadButton;
     Bitmap bitmap;
     ExifInterface exif;
     Upload upload;
@@ -68,9 +69,9 @@ public class CropImageActivity extends Activity implements Button.OnClickListene
         setContentView(R.layout.activity_crop_image);
 
         image = (CropImageView) findViewById(R.id.CropImageView);
-        newImageButton = (Button) findViewById(R.id.choose_new_image_button);
-        rotateButton = (Button) findViewById(R.id.rotate_button);
-        uploadButton = (Button) findViewById(R.id.upload_picture_button);
+        newImageButton = (ImageButton) findViewById(R.id.choose_new_image_button);
+        rotateButton = (ImageButton) findViewById(R.id.rotate_button);
+        uploadButton = (ImageButton) findViewById(R.id.upload_picture_button);
 
         newImageButton.setOnClickListener(this);
         rotateButton.setOnClickListener(this);
@@ -328,5 +329,14 @@ public class CropImageActivity extends Activity implements Button.OnClickListene
 
             }
         }
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        super.onRestoreInstanceState(savedInstanceState);
+        Intent i = new Intent(this,SplashActivity.class);
+        startActivity(i);
+        finish();
     }
 }

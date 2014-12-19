@@ -18,6 +18,8 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 
 public class PhoneNumberDialog extends DialogFragment {
 
@@ -36,6 +38,10 @@ public class PhoneNumberDialog extends DialogFragment {
         builder.setView(dialogView);
 
         phoneNumberField = (EditText) dialogView.findViewById(R.id.phone_number_field);
+        Style.toOpenSans(getActivity(),phoneNumberField,"light");
+        TextView instructions = (TextView) dialogView.findViewById(R.id.phone_number_instructions);
+        Style.toOpenSans(getActivity(),instructions,"light");
+
         try {
             TelephonyManager tMgr = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
             String mPhoneNumber = tMgr.getLine1Number();

@@ -4,11 +4,39 @@
     <style name="AppTheme" parent="android:Theme.Holo">
         <item name="android:actionBarStyle">@style/MyActionBar</item>
         <item name="android:windowContentOverlay">@drawable/actionbar_shadow</item>
+        <item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
+    </style>
 
+    <!-- No Title Bar theme. -->
+    <style name="NoTitleBarTheme" parent="@android:style/Theme.Holo.NoActionBar">
+        <item name="vpiCirclePageIndicatorStyle">@style/CustomCirclePageIndicator</item>
     </style>
 
     <style name="MyActionBar" parent="android:Widget.Holo.ActionBar">
         <item name="android:background">@color/dark_gray</item>
     </style>
+
+    <style name="ActionButtonStyle" parent="@android:style/Widget.Holo.Light.ActionButton">
+        <item name="android:minWidth">0dip</item>
+        <item name="android:paddingLeft">15dip</item>
+        <item name="android:paddingRight">15dip</item>
+    </style>
+
+    <style name="StyledIndicators" parent="@android:style/Theme.Light">
+        <item name="vpiCirclePageIndicatorStyle">@style/CustomCirclePageIndicator</item>
+    </style>
+
+
+
+    <style name="CustomCirclePageIndicator">
+        <item name="fillColor">@color/white</item>
+        <item name="strokeColor">@color/white</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="radius">4dp</item>
+        <item name="centered">true</item>
+    </style>
+
+
+
 
 </resources>

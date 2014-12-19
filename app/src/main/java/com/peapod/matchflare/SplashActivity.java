@@ -8,9 +8,19 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.RelativeLayout;
+
+import com.viewpagerindicator.CirclePageIndicator;
+import com.viewpagerindicator.TitlePageIndicator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,15 +34,105 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
+import com.viewpagerindicator.PageIndicator;
 
-public class SplashActivity extends Activity implements Callback<Person> {
+public class SplashActivity extends FragmentActivity implements Callback<Person> {
 
+    FragmentAdapter mAdapter;
+    ViewPager mPager;
+    PageIndicator mIndicator;
+    RelativeLayout splashLogo;
+    RelativeLayout instructionPager;
+
+    Button registerButton;
+    Button nextButton;
+
+    int Number = 0;
+    boolean reachedFinalInstruction = false;
+    boolean toPresentMatches = false;
+    boolean toRegister = false;
+    boolean finishedProcessingContacts = false;
+
+    MatchesAndPairs matchesAndPairs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        splashLogo = (RelativeLayout) findViewById(R.id.splash_logo);
+        instructionPager = (RelativeLayout) findViewById(R.id.instruction_pager);
+
+        mAdapter = new FragmentAdapter(getSupportFragmentManager());
+        mPager = (ViewPager)findViewById(R.id.pager);
+        mPager.setAdapter(mAdapter);
+
+        mIndicator = (CirclePageIndicator)findViewById(R.id.indicator);
+        mIndicator.setViewPager(mPager);
+
+        registerButton = (Button) findViewById(R.id.register_button);
+        nextButton = (Button) findViewById(R.id.start_matching);
+        Style.toOpenSans(this,registerButton,"light");
+        Style.toOpenSans(this,nextButton,"light");
+
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (reachedFinalInstruction){
+                    Style.makeToast(SplashActivity.this,"Presenting Matches");
+                    toPresentMatches = true;
+                    if (finishedProcessingContacts) {
+                        Intent i = new Intent(SplashActivity.this, PresentMatchesActivity.class);
+                        i.putExtra("matches", (Serializable) matchesAndPairs.matches);
+                        startActivity(i);
+                    }
+                }
+                else {
+                    if (mPager.getCurrentItem() < 2) {
+                        mPager.setCurrentItem(mPager.getCurrentItem() + 1);
+                    }
+                }
+            }
+        });
+
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toRegister = true;
+                registerButton.setEnabled(false);
+
+                Intent i = new Intent(SplashActivity.this,VerificationActivity.class);
+                i.putExtra("finished_processing_contacts",finishedProcessingContacts);
+                startActivity(i);
+            }
+        });
+
+        ViewPager.OnPageChangeListener pageChangeListener = new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 2) {
+                    reachedFinalInstruction = true;
+                    registerButton.setEnabled(true);
+                    nextButton.setText("Start Matching");
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        };
+        mIndicator.setOnPageChangeListener(pageChangeListener);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         //Check if access token exists and is valid
         String accessToken = ((Global) getApplication()).getAccessToken();
         if (accessToken != null) {
@@ -41,11 +141,15 @@ public class SplashActivity extends Activity implements Callback<Person> {
             ((Global)getApplication()).ui.verifyAccessToken(options, this);
         }
         else {
+            splashLogo.setVisibility(View.GONE);
+            instructionPager.setVisibility(View.VISIBLE);
             ProcessContactsTask task = new ProcessContactsTask();
-            task.execute();
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            else
+                task.execute();
         }
     }
-
     public class MatchesAndPairs {
         ArrayList<Match> matches;
         Set<Person> contact_objects;
@@ -53,7 +157,6 @@ public class SplashActivity extends Activity implements Callback<Person> {
 
     class ProcessContactsTask extends AsyncTask<Integer, Void, Boolean>{
 
-        MatchesAndPairs matchesAndPairs;
         Integer contactId;
 
         @Override
@@ -87,7 +190,7 @@ public class SplashActivity extends Activity implements Callback<Person> {
                 Person toAdd = new Person(full_name,raw_phone_number);
                 people.add(toAdd);
             }
-
+            contactsCursor.close();
             Map<String,Integer> options = new HashMap<String,Integer>();
 
             if (thisUserContactId.length > 0) {
@@ -97,6 +200,7 @@ public class SplashActivity extends Activity implements Callback<Person> {
 
             try {
                 matchesAndPairs = ((Global) getApplication()).ui.processContacts(new Contacts(people), options);
+
                 Log.e("Successfully processed contacts", "woo");
             }
             catch (RetrofitError e) {
@@ -110,17 +214,27 @@ public class SplashActivity extends Activity implements Callback<Person> {
 
         @Override
         protected void onPostExecute(Boolean result) {
-            if (result.booleanValue()) { //If successful...
+            finishedProcessingContacts = true;
 
+            if (result.booleanValue()) { //If successful...
+                Style.makeToast(SplashActivity.this,"Successfully processed contacts");
                 if (contactId == null) {
                     // if the current user does not have a valid access token, pass in the pairs and start matching
                     ((Global) getApplication()).thisUser.contact_objects = matchesAndPairs.contact_objects;
-                    Intent i = new Intent(SplashActivity.this, PresentMatchesActivity.class);
-                    i.putExtra("matches", (Serializable) matchesAndPairs.matches);
-                    startActivity(i);
+
+                    if (toPresentMatches) {  //If the unregistered user pressed the 'start matching' button
+                        Intent i = new Intent(SplashActivity.this, PresentMatchesActivity.class);
+                        i.putExtra("matches", (Serializable) matchesAndPairs.matches);
+                        startActivity(i);
+                    }
+                    else if (toRegister) {  //If the user pressed the register button, then send a broadcast to be received by VerificationActivity
+                        Intent intent = new Intent("com.peapod.matchflare.FINISHED_PROCESSING_CONTACTS");
+                        LocalBroadcastManager.getInstance(SplashActivity.this).sendBroadcast(intent);
+                    }
+
                 } else {
                     //Do nothing
-                    Style.makeToast(SplashActivity.this,"Successfully processed contacts");
+
                 }
             } else { //If processing contacts failed...
                 if (contactId == null) {
@@ -128,6 +242,7 @@ public class SplashActivity extends Activity implements Callback<Person> {
                     Style.makeToast(SplashActivity.this, "Could not process your contacts. Try again later");
                 } else {
                     //Accept the failure and do nothing
+                    Style.makeToast(SplashActivity.this, "Could not process your new contacts");
                 }
             }
         }
@@ -142,13 +257,17 @@ public class SplashActivity extends Activity implements Callback<Person> {
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, person.contact_id);
         else
             task.execute(person.contact_id);
+
         Intent i = new Intent(this,PresentMatchesActivity.class);
+        //Intent i = new Intent(this,VerificationActivity.class);
         startActivity(i);
     }
 
     @Override
     public void failure(RetrofitError error) {
         //Failed to verify access token
+        splashLogo.setVisibility(View.GONE);
+        instructionPager.setVisibility(View.VISIBLE);
         ProcessContactsTask task = new ProcessContactsTask();
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -181,5 +300,14 @@ public class SplashActivity extends Activity implements Callback<Person> {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        super.onRestoreInstanceState(savedInstanceState);
+        Intent i = new Intent(this,SplashActivity.class);
+        startActivity(i);
+        finish();
     }
 }

@@ -11,8 +11,11 @@ public class ChatMessage {
     public int sender_contact_id;
     public String guessed_full_name;
     public int chat_id;
+    public int pair_id;
     public String type;
     public ArrayList<ChatMessage> history;
+    public String created_at;
+    public Match pair;
 
     public ChatMessage(String myContent) {
         content = myContent;

@@ -14,26 +14,26 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_PROFILE"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:name="com.peapod.matchflare.Global"
+        android:name=".Global"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.peapod.matchflare.PresentMatchesActivity"
+            android:name=".PresentMatchesActivity"
+            android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden">
+            android:screenOrientation="portrait" >
         </activity>
 
         <receiver
-            android:name="com.peapod.matchflare.GCMBroadcastReceiverCompat"
+            android:name=".GCMBroadcastReceiverCompat"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -43,29 +43,29 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.peapod.matchflare.GCMIntentService" />
+        <service android:name=".GCMIntentService" />
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name="com.peapod.matchflare.NotificationActivity"
+            android:name=".NotificationActivity"
+            android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden">
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="com.peapod.matchflare.EvaluateActivity"
+            android:name=".EvaluateActivity"
+            android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden">
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="com.peapod.matchflare.ChatActivity"
+            android:name=".ChatActivity"
+            android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden">
+            android:screenOrientation="portrait" >
         </activity>
         <!-- <activity -->
         <!-- android:name="com.peapod.matchflare.RegistrationActivity" -->
@@ -74,30 +74,41 @@
 
         <!-- </activity> -->
         <activity
-            android:name="com.peapod.matchflare.VerificationActivity"
+            android:name=".VerificationActivity"
+            android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden">
-
-        </activity>
-
-        <activity
-            android:name="com.peapod.matchflare.CropImageActivity"
-            android:label="@string/title_activity_crop_image"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden">
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="com.peapod.matchflare.SplashActivity"
+            android:name=".CropImageActivity"
+            android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
-            android:theme="@android:style/Theme.NoTitleBar" >
-
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".SplashActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="Matchflare"
+            android:noHistory="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/NoTitleBarTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
+        </activity>
+        <activity
+            android:name=".ViewMatchActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="Matchflare"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".UpdateProfileActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="Matchflare"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 

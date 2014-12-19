@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer-array
+        name="mycolors">
+        <item>@color/transparent</item>
+        <item>@color/matchflare_pink</item>
+    </integer-array>
+</resources>
+

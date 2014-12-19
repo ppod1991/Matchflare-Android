@@ -4,7 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" >
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/single_message_container"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
@@ -13,11 +13,27 @@
             android:id="@+id/single_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:background="@drawable/final_chat_blue"
             android:text="aasasdfasdfasdfasdfasdfadsfsdfgsdfgsdfsdfgsdfgsdfgsdfasdsdfasdf"
             android:textColor="@android:color/black"
-            android:textSize="15dp" />
-    </LinearLayout>
+            android:textSize="15dp"
+            android:layout_toRightOf="@+id/date_field"
+            android:layout_toEndOf="@+id/date_field" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Thu, Dec 10 \n 2:07 AM"
+            android:id="@+id/date_field"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="5dp"
+            android:alpha="0.85"
+            android:textAlignment="center"
+            android:gravity="center_horizontal"
+            android:visibility="invisible" />
+    </RelativeLayout>
 
 </LinearLayout>

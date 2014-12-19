@@ -33,6 +33,14 @@ public class Person implements Serializable {
 
     };
 
+    public String toString() {
+        if (guessed_full_name.equals("")) {
+            return "Anonymous friend";
+        }
+        else {
+            return guessed_full_name;
+        }
 
+    }
 
 }

@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
@@ -16,18 +19,28 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.support.annotation.StringRes;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -53,16 +66,31 @@ public class VerificationActivity extends Activity implements Button.OnClickList
     EditText fullNameField;
     String imageURL;
     Button chooseImageButton;
+    Button nameButton;
+    Button preferenceButton;
+    Button imageSkipButton;
+    RadioGroup genderRadioGroup;
     ImageView profileThumbnail;
+    TextView nameInstructions;
+    TextView smsInstructions;
+    TextView genderInstructions;
+    TextView interestedInInstructions;
+    RelativeLayout nameLayout;
+    LinearLayout genderLayout;
+    LinearLayout preferenceLayout;
+    LinearLayout pictureLayout;
+    LinearLayout codeLayout;
+    boolean finishedProcessingContacts;
+    View progressIndicator;
+    boolean toVerify = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verification);
 
-        startMatchingButton = (Button) findViewById(R.id.start_matching_button);
-        startMatchingButton.setOnClickListener(this);
 
+        startMatchingButton = (Button) findViewById(R.id.start_matching_button);
         verificationCode = (EditText) findViewById(R.id.verification_code_field);
         maleButton = (RadioButton) findViewById(R.id.my_gender_guy);
         femaleButton = (RadioButton) findViewById(R.id.my_gender_girl);
@@ -71,12 +99,70 @@ public class VerificationActivity extends Activity implements Button.OnClickList
         fullNameField = (EditText) findViewById(R.id.full_name_field);
         chooseImageButton = (Button) findViewById(R.id.choose_picture_button);
         profileThumbnail = (ImageView) findViewById(R.id.profile_pic_thumbnail);
+        nameInstructions = (TextView) findViewById(R.id.full_name_instructions);
+        genderInstructions = (TextView) findViewById(R.id.my_gender_instructions);
+        smsInstructions = (TextView) findViewById(R.id.verification_code_instructions);
+        interestedInInstructions = (TextView) findViewById(R.id.gender_preference_instructions);
+        nameButton = (Button) findViewById(R.id.name_button);
+        preferenceButton = (Button) findViewById(R.id.gender_preference_button);
+        imageSkipButton = (Button) findViewById(R.id.skip_picture_button);
+        genderRadioGroup = (RadioGroup) findViewById(R.id.my_gender_group);
+        progressIndicator = findViewById(R.id.progress_indicator);
+        progressIndicator.setVisibility(View.GONE);
+        imageSkipButton.setText("Skip");
+
+        Style.toOpenSans(this,verificationCode,"light");
+        Style.toOpenSans(this,maleButton,"light");
+        Style.toOpenSans(this,femaleButton,"light");
+        Style.toOpenSans(this,malesCheckBox,"light");
+        Style.toOpenSans(this,startMatchingButton,"light");
+        Style.toOpenSans(this,femalesCheckBox,"light");
+        Style.toOpenSans(this,fullNameField,"light");
+        Style.toOpenSans(this,chooseImageButton,"light");
+        Style.toOpenSans(this,nameButton,"light");
+        Style.toOpenSans(this,preferenceButton,"light");
+        Style.toOpenSans(this,imageSkipButton,"light");
+        Style.toOpenSans(this,nameInstructions,"regular");
+        Style.toOpenSans(this,genderInstructions,"regular");
+        Style.toOpenSans(this,smsInstructions,"regular");
+        Style.toOpenSans(this,interestedInInstructions,"regular");
 
         chooseImageButton.setOnClickListener(this);
+        startMatchingButton.setOnClickListener(this);
+        imageSkipButton.setOnClickListener(this);
+        nameButton.setOnClickListener(this);
+        preferenceButton.setOnClickListener(this);
 
+        nameLayout = (RelativeLayout) findViewById(R.id.name_layout);
+        genderLayout = (LinearLayout) findViewById(R.id.my_gender_layout);
+        preferenceLayout = (LinearLayout) findViewById(R.id.preference_layout);
+        pictureLayout = (LinearLayout) findViewById(R.id.picture_layout);
+        codeLayout = (LinearLayout) findViewById(R.id.code_layout);
+
+        toVerifyPerson = new Person();
+
+        genderRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // checkedId is the RadioButton selected
+                if (maleButton.isChecked()) {
+                    toVerifyPerson.guessed_gender = "MALE";
+                }
+                else if (femaleButton.isChecked()) {
+                    toVerifyPerson.guessed_gender = "FEMALE";
+                }
+                genderLayout.setVisibility(View.GONE);
+                preferenceLayout.setVisibility(View.VISIBLE);
+            }
+        });
 
         PhoneNumberDialog phoneFragment = new PhoneNumberDialog();
         phoneFragment.show(getFragmentManager(),"phone_fragment");
+
+        finishedProcessingContacts = getIntent().getBooleanExtra("finished_processing_contacts",false);
+        if (!finishedProcessingContacts && ((Global) getApplication()).thisUser.contact_objects != null) {
+            finishedProcessingContacts = true;
+        }
 
         try {
             Cursor c = getApplication().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
@@ -116,18 +202,13 @@ public class VerificationActivity extends Activity implements Button.OnClickList
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.start_matching_button) {
 
-            toVerifyPerson = new Person();
-
+        if (view.getId() == R.id.name_button) {
             toVerifyPerson.guessed_full_name = fullNameField.getText().toString();
-            if (maleButton.isChecked()) {
-                toVerifyPerson.guessed_gender = "MALE";
-            }
-            else if (femaleButton.isChecked()) {
-                toVerifyPerson.guessed_gender = "FEMALE";
-            }
-
+            nameLayout.setVisibility(View.GONE);
+            genderLayout.setVisibility(View.VISIBLE);
+        }
+        else if (view.getId() == R.id.gender_preference_button) {
             ArrayList<String> genderPreferences = new ArrayList<String>();
             if (malesCheckBox.isChecked()) {
                 genderPreferences.add("MALE");
@@ -139,16 +220,38 @@ public class VerificationActivity extends Activity implements Button.OnClickList
 
             if (genderPreferences.size() > 0) {
                 toVerifyPerson.gender_preferences = genderPreferences;
+                preferenceLayout.setVisibility(View.GONE);
+                pictureLayout.setVisibility(View.VISIBLE);
             }
-            toVerifyPerson.contact_objects = ((Global)getApplication()).thisUser.contact_objects;
-            toVerifyPerson.image_url = imageURL;
+        }
+        else if (view.getId() == R.id.skip_picture_button) {
+            if (imageURL != null && imageURL != "") {
+                toVerifyPerson.image_url = imageURL;
+            }
+            pictureLayout.setVisibility(View.GONE);
+            codeLayout.setVisibility(View.VISIBLE);
+        }
+        if (view.getId() == R.id.start_matching_button) {
 
-            Map<String, String> options = new HashMap<String, String>();
-            options.put("device_id",((Global) getApplication()).getDeviceID());
-            options.put("phone_number",rawPhoneNumber);
-            options.put("input_verification_code", verificationCode.getText().toString());
+            toVerify = true;
+            InputMethodManager imm = (InputMethodManager)getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(verificationCode.getWindowToken(), 0);
+            startMatchingButton.setEnabled(false);
+            if (finishedProcessingContacts) {
+                Style.makeToast(this,"Contact Objects: " + ((Global)getApplication()).thisUser.contact_objects.size());
+                toVerifyPerson.contact_objects = ((Global)getApplication()).thisUser.contact_objects;
+                Map<String, String> options = new HashMap<String, String>();
+                options.put("device_id",((Global) getApplication()).getDeviceID());
+                options.put("phone_number",rawPhoneNumber);
+                options.put("input_verification_code", verificationCode.getText().toString());
 
-            ((Global)getApplication()).ui.verifyVerificationSMS(toVerifyPerson, options, new VerifySMSCallback());
+                ((Global)getApplication()).ui.verifyVerificationSMS(toVerifyPerson, options, new VerifySMSCallback());
+            }
+
+            codeLayout.setVisibility(View.GONE);
+            progressIndicator.setVisibility(View.VISIBLE);
+
 
         }
         else if (view.getId() == R.id.choose_picture_button) {
@@ -169,6 +272,20 @@ public class VerificationActivity extends Activity implements Button.OnClickList
         options.put("phone_number",rawPhoneNumber);
         Style.makeToast(this, (rawPhoneNumber));
         ((Global) getApplication()).ui.sendSMSVerification(options,this);
+        ((Global) getApplication()).ui.getPicture(options, new Callback<StringResponse>() {
+
+            @Override
+            public void success(StringResponse response, Response response2) {
+                imageURL = response.response;
+                Picasso.with(VerificationActivity.this).load(response.response).into(profileThumbnail);
+                imageSkipButton.setText("Next");
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.e("No verified image found", error.toString());
+            }
+        });
     }
 
 
@@ -194,18 +311,24 @@ public class VerificationActivity extends Activity implements Button.OnClickList
             ((Global)getApplication()).thisUser = person;
             ((Global)getApplication()).setAccessToken(person.access_token);
 
+            progressIndicator.setVisibility(View.GONE);
             Intent i = new Intent(VerificationActivity.this, PresentMatchesActivity.class);
             startActivity(i);
+            finish();
             Style.makeToast(VerificationActivity.this,"Get Ready, Cupid!");
         }
 
         @Override
         public void failure(RetrofitError error) {
             //Failed to verify the user
+            toVerify = false;
+            progressIndicator.setVisibility(View.GONE);
+            codeLayout.setVisibility(View.VISIBLE);
             Log.e("Error Verifying User:", error.toString());
             Style.makeToast(VerificationActivity.this,"Invalid or Expired Code. Argh.");
             PhoneNumberDialog phoneFragment = new PhoneNumberDialog();
             phoneFragment.show(getFragmentManager(),"phone_fragment");
+            startMatchingButton.setEnabled(true);
         }
     }
 
@@ -214,7 +337,42 @@ public class VerificationActivity extends Activity implements Button.OnClickList
           if (resultCode == RESULT_OK) {
                 imageURL = data.getStringExtra("image_URL");
                 Picasso.with(this).load(imageURL).into(profileThumbnail);
+                imageSkipButton.setText("Next");
           }
       }
     };
+
+    private BroadcastReceiver processedContactsReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Style.makeToast(VerificationActivity.this,"Received broadcast");
+            finishedProcessingContacts = true;
+            if (toVerify) {  //If the user had finished the form and is waiting to start matching
+                progressIndicator.setVisibility(View.GONE);
+                toVerifyPerson.contact_objects = ((Global)getApplication()).thisUser.contact_objects;
+                Map<String, String> options = new HashMap<String, String>();
+                options.put("device_id",((Global) getApplication()).getDeviceID());
+                options.put("phone_number",rawPhoneNumber);
+                options.put("input_verification_code", verificationCode.getText().toString());
+
+                ((Global)getApplication()).ui.verifyVerificationSMS(toVerifyPerson, options, new VerifySMSCallback());
+            }
+        }
+    };
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        // Register mMessageReceiver to receive messages.
+        LocalBroadcastManager.getInstance(this).registerReceiver(processedContactsReceiver,
+                new IntentFilter("com.peapod.matchflare.FINISHED_PROCESSING_CONTACTS"));
+    }
+
+    @Override
+    protected void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(processedContactsReceiver);
+        super.onPause();
+    }
+
 }

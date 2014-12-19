@@ -47,16 +47,28 @@ public class NotificationsAdapter extends BaseExpandableListAdapter {
 
     public View getChildView(final int groupPosition, final int childPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
-        final Object child = getChild(groupPosition, childPosition);
+        Object child = getChild(groupPosition, childPosition);
+
         LayoutInflater inflater = context.getLayoutInflater();
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.child_item, null);
         }
 
+
         TextView childTextView = (TextView) convertView.findViewById(R.id.notification_text);
         Style.toOpenSans(context,childTextView,"light");
         childTextView.setText(child.toString());
+
+        if (child instanceof Match) {
+            Match thisMatch = (Match) child;
+            if (thisMatch.has_unseen != null && thisMatch.has_unseen.booleanValue()) {
+                childTextView.setTextColor(context.getResources().getColor(R.color.matchflare_pink));
+                ImageView notificationIcon = (ImageView) convertView.findViewById(R.id.notification_image);
+                notificationIcon.setImageDrawable(context.getResources().getDrawable(R.drawable.new_chat_icon));
+            }
+        }
+
         return convertView;
     }
 

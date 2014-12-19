@@ -7,7 +7,7 @@
     <ImageView
         android:layout_width="35dp"
         android:layout_height="35dp"
-        android:id="@+id/imageView"
+        android:id="@+id/notification_image"
         android:src="@drawable/ic_launcher"
         android:layout_alignTop="@+id/notification_text"
         android:layout_alignParentLeft="true"
@@ -22,9 +22,9 @@
         android:textColor="@color/white"
         android:text="Notification"
         android:layout_gravity="center_horizontal"
-        android:layout_toRightOf="@+id/imageView"
-        android:layout_toEndOf="@+id/imageView"
         android:gravity="center_vertical"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/notification_image"
+        android:layout_toEndOf="@+id/notification_image" />
 
 </RelativeLayout>

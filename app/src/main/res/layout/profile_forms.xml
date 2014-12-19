@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
+
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/name_layout"
+        android:visibility="visible"
+        android:layout_marginBottom="10dp">
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:id="@+id/full_name_field"
+            android:layout_alignParentTop="true"
+            android:hint="Full Name"
+            android:textSize="25dp"
+            android:layout_toLeftOf="@+id/name_button"
+            android:layout_toStartOf="@+id/name_button" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="your full name--CANNOT be changed"
+            android:id="@+id/full_name_instructions"
+            android:layout_gravity="center"
+            android:layout_below="@+id/full_name_field"
+            android:layout_centerHorizontal="true"
+            android:textSize="15sp"
+            android:textColor="@color/light_gray" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ok"
+            android:id="@+id/name_button"
+            android:layout_above="@+id/full_name_instructions"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="30sp"
+            android:visibility="visible" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/my_gender_layout"
+        android:visibility="gone"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="I am a..."
+            android:id="@+id/my_gender_instructions"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:textSize="35sp" />
+
+        <RadioGroup
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/name_field"
+            android:layout_alignLeft="@+id/phone_field"
+            android:layout_alignRight="@+id/name_field"
+            android:layout_alignEnd="@+id/name_field"
+            android:orientation="horizontal"
+            android:id="@+id/my_gender_group"
+            android:layout_gravity="center"
+            android:layout_margin="5dp"
+            android:gravity="center_horizontal" >
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Girl"
+                android:id="@+id/my_gender_girl"
+                android:textSize="30sp"
+                android:layout_margin="5dp" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guy"
+                android:id="@+id/my_gender_guy"
+                android:textSize="30sp"
+                android:layout_margin="5dp" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/preference_layout"
+        android:visibility="gone"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="I&apos;m into..."
+            android:id="@+id/gender_preference_instructions"
+            android:layout_gravity="center"
+            android:textSize="35sp" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="5dp"
+            android:textAlignment="center" >
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guys"
+                android:id="@+id/guys_check_box"
+                android:textSize="30sp"
+                android:layout_margin="5dp" />
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Girls"
+                android:id="@+id/girls_check_box"
+                android:textSize="30sp"
+                android:layout_margin="5dp" />
+        </LinearLayout>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ok"
+            android:id="@+id/gender_preference_button"
+            android:layout_above="@+id/full_name_instructions"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="25sp"
+            android:layout_marginLeft="5dp"
+            android:layout_gravity="center" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:id="@+id/picture_layout"
+        android:visibility="gone"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:id="@+id/profile_pic_thumbnail"
+            android:src="@drawable/choose_profile_picture_square" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:gravity="center" >
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Change Picture"
+                android:id="@+id/choose_picture_button"
+                android:layout_gravity="center"
+                android:layout_marginLeft="10dp"
+                android:textSize="20sp" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Next"
+                android:id="@+id/skip_picture_button"
+                android:layout_gravity="center"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/code_layout"
+        android:visibility="gone">
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" >
+
+            <EditText
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:id="@+id/verification_code_field"
+                android:hint="4-digit code"
+                android:layout_marginTop="5dp"
+                android:layout_toLeftOf="@+id/start_matching_button"
+                android:layout_toStartOf="@+id/start_matching_button"
+                android:textSize="25dp"
+                android:inputType="phone" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Match!"
+                android:id="@+id/start_matching_button"
+                android:layout_gravity="center_horizontal"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:textSize="25dp" />
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Check your SMS/Text Messages for Verification Code"
+            android:id="@+id/verification_code_instructions"
+            android:textAlignment="center"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:textSize="15dp"
+            android:textColor="@color/light_gray" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:visibility="gone" >
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/zipcode_field"
+            android:layout_weight="1"
+            android:hint="(optional)" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Zipcode:"
+            android:id="@+id/zipcode_instructions" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Age:"
+            android:id="@+id/age_instructions" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/age_field"
+            android:layout_weight="1"
+            android:hint="(optional)"
+            android:numeric="integer" />
+    </LinearLayout>
+</LinearLayout>

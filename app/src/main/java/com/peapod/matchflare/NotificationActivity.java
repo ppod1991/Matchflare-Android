@@ -28,12 +28,16 @@ public class NotificationActivity extends Activity{
     public ExpandableListView notificationsList;
     public NotificationsAdapter notificationsAdapter;
 
+    View progressIndicator;
+    View root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification);
 
+        progressIndicator = findViewById(R.id.progress_indicator);
+        root = findViewById(R.id.root_notifications);
 
         notificationsList = (ExpandableListView) findViewById(R.id.notifications_list);
         notificationsAdapter = new NotificationsAdapter(NotificationActivity.this);
@@ -45,6 +49,7 @@ public class NotificationActivity extends Activity{
         Map<String, Integer> optionsPending = new HashMap<String, Integer>();
         optionsPending.put("contact_id",((Global) getApplication()).thisUser.contact_id);
         ((Global) getApplication()).ui.getNotificationLists(optionsPending, new NotificationsListCallback());
+
 
     }
 
@@ -91,9 +96,13 @@ public class NotificationActivity extends Activity{
                     intent.putExtra("pair_id",chosenNotification.pair_id);
                     startActivity(intent);
                 }
-                else if (chosenNotification.notification_type.equals("MATCHEE_MATCH_ACCEPTED")) {
+                else if (chosenNotification.notification_type.equals("MATCHEE_MATCH_ACCEPTED") ||
+                        chosenNotification.notification_type.equals("MATCHER_QUESTION_ASKED") ||
+                        chosenNotification.notification_type.equals("MATCHEE_QUESTION_ANSWERED") ||
+                        chosenNotification.notification_type.equals("MATCHEE_MESSAGE_SENT")) {
                     Intent intent = new Intent(NotificationActivity.this, ChatActivity.class);
                     intent.putExtra("chat_id",chosenNotification.chat_id);
+                    intent.putExtra("pair_id", chosenNotification.pair_id);
                     startActivity(intent);
                 }
             }
@@ -102,7 +111,14 @@ public class NotificationActivity extends Activity{
                 //Check the group...NEED TO IMPLEMENT
 
                 Match chosenMatch = (Match) selected;
-                Intent intent = new Intent(NotificationActivity.this, EvaluateActivity.class);
+                Intent intent;
+                if (groupPosition == 2) {
+                    intent = new Intent(NotificationActivity.this, ViewMatchActivity.class);
+                }
+                else {
+                    intent = new Intent(NotificationActivity.this, EvaluateActivity.class);
+                }
+
                 intent.putExtra("pair", chosenMatch);
                 startActivity(intent);
             }
@@ -122,14 +138,21 @@ public class NotificationActivity extends Activity{
            Log.e("Failure to mark notification as seen", error.toString());
         }
     }
+//
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        super.onRestoreInstanceState(savedInstanceState);
+        Intent i = new Intent(this,SplashActivity.class);
+        startActivity(i);
+        finish();
+    }
 
     public class NotificationsListCallback implements Callback<NotificationLists>
     {
         @Override
         public void success(NotificationLists response, Response response2) {
             Log.e("Notifications Lists retrieved", response.toString());
-
-
 
             notificationsAdapter.headers = new ArrayList<String>(Arrays.asList("Notifications", "Matches You're In", "Matches You've Made"));
 
@@ -142,6 +165,9 @@ public class NotificationActivity extends Activity{
             notificationsList.expandGroup(1);
             notificationsList.expandGroup(2);
 
+            progressIndicator.setVisibility(View.GONE);
+            root.setVisibility(View.VISIBLE);
+
         }
 
         @Override
@@ -149,4 +175,5 @@ public class NotificationActivity extends Activity{
             Log.e("Failure to get pending matches", error.toString());
         }
     }
+
 }

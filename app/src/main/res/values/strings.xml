@@ -15,7 +15,10 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="send_sms">Send SMS</string>
     <string name="cancel_sms">Cancel</string>
+    <string name="cancel">Cancel</string>
     <string name="title_activity_crop_image">CropImageActivity</string>
     <string name="title_activity_splash">SplashActivity</string>
+    <string name="title_activity_view_match">ViewMatchActivity</string>
+    <string name="title_activity_update_profile">UpdateProfileActivity</string>
 
 </resources>
