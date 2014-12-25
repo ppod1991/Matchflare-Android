@@ -33,7 +33,8 @@
             android:alpha="0.85"
             android:textAlignment="center"
             android:gravity="center_horizontal"
-            android:visibility="invisible" />
+            android:visibility="invisible"
+            android:autoLink="all"/>
     </RelativeLayout>
 
 </LinearLayout>

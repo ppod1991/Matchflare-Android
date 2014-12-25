@@ -17,6 +17,8 @@ package com.peapod.matchflare;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -49,26 +51,72 @@ public class GCMIntentService extends GCMBaseIntentServiceCompat {
 
     private void dumpEvent(String event, Intent message) {
 
-        Intent intent=new Intent(Global.ACTION_EVENT);
-        String jsonData = message.getStringExtra("data");
-        Gson gson = new Gson();
-        Notification notification = gson.fromJson(jsonData,Notification.class);
-        intent.putExtra("notification", notification);
-        if (!LocalBroadcastManager.getInstance(this).sendBroadcast(intent)) {
-            NotificationCompat.Builder b = new NotificationCompat.Builder(this);
-            Intent ui = new Intent(this, NotificationActivity.class);
-            b.setAutoCancel(true)
-                    .setDefaults(android.app.Notification.DEFAULT_SOUND)
-                    .setContentTitle(getString(R.string.notif_title))
-                    .setContentText(notification.push_message)
-                    .setSmallIcon(R.drawable.ic_launcher)
-                    .setTicker(getString(R.string.notif_title))
-                    .setContentIntent(PendingIntent.getActivity(this, 0, ui, 0));
+        if (event.equals("onMessage")) {
+            Intent intent=new Intent("com.peapod.matchflare.push_notification");
+            String jsonData = message.getStringExtra("data");
+            Gson gson = new Gson();
+            try {
+                Notification notification = gson.fromJson(jsonData,Notification.class);
+                if (notification != null) {
+                    intent.putExtra("notification", notification);
 
-            NotificationManager mgr =
-                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            mgr.notify(NOTIFY_ID, b.build());
+                    String notificationTitle = "Matchflare Notification!";
+                    if (notification.notification_type != null) {
+                        if (notification.notification_type.equals("USER REMINDER")) {
+                            notificationTitle = "What do you think of them?";
+                        }
+                        else if (notification.notification_type.equals("MATCHER_ONE_MATCH_ACCEPTED")) {
+                            notificationTitle = "Match Accepted!";
+                        }
+                        else if (notification.notification_type.equals("MATCHER_MESSAGING_STARTED")) {
+                            notificationTitle = "They started talking!";
+                        }
+                        else if (notification.notification_type.equals("MATCHER_QUESTION_ASKED")) {
+                            notificationTitle = "New Question?";
+                        }
+                        else if (notification.notification_type.equals("MATCHEE_NEW_MATCH")) {
+                            notificationTitle = "New Match!";
+                        }
+                        else if (notification.notification_type.equals("MATCHEE_MATCH_ACCEPTED")) {
+                            notificationTitle = "Match made!";
+                        }
+                        else if (notification.notification_type.equals("MATCHEE_QUESTION_ANSWERED")) {
+                            notificationTitle = "Question Answered!";
+                        }
+                        else if (notification.notification_type.equals("MATCHEE_MESSAGE_SENT")) {
+                            notificationTitle = "New Message!";
+                        }
+                    }
+
+
+                    if (!LocalBroadcastManager.getInstance(this).sendBroadcast(intent)) {
+                        NotificationCompat.Builder b = new NotificationCompat.Builder(this);
+                        Intent ui = new Intent(this, SplashActivity.class);
+                        ui.putExtra("notification",notification);
+                        ui.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        long[] vibrate = {0,100};
+                        b.setAutoCancel(true)
+                                .setContentTitle(notificationTitle)
+                                .setContentText(notification.push_message)
+                                .setSmallIcon(R.drawable.ic_launcher)
+                                .setTicker(notification.push_message)
+                                .setLights(Color.argb(255,250,69,118),2000,500)
+                                .setVibrate(vibrate)
+                                        //.setSound(Uri.parse("android.resource://com.peapod.matchflare/" + R.raw.notification_sound))
+                                .setContentIntent(PendingIntent.getActivity(this, 0, ui, PendingIntent.FLAG_UPDATE_CURRENT));
+
+                        NotificationManager mgr =
+                                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                        mgr.notify(NOTIFY_ID, b.build());
+                    }
+                }
+
+            }
+            catch (Error e) {
+                Log.e("Could not parse notification push message", e.toString());
+            }
         }
+
 //        Bundle extras=message.getExtras();
 //        for (String key : extras.keySet()) {
 //            Log.d(getClass().getSimpleName(),

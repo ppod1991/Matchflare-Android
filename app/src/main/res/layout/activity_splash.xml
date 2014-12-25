@@ -5,6 +5,9 @@
     android:background="@color/matchflare_gray"
     >
 
+    <include android:id="@+id/progress_indicator" layout="@layout/progress_indicator" />
+
+
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

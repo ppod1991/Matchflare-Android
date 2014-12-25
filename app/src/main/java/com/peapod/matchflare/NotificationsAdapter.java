@@ -67,6 +67,11 @@ public class NotificationsAdapter extends BaseExpandableListAdapter {
                 ImageView notificationIcon = (ImageView) convertView.findViewById(R.id.notification_image);
                 notificationIcon.setImageDrawable(context.getResources().getDrawable(R.drawable.new_chat_icon));
             }
+            else {
+                childTextView.setTextColor(context.getResources().getColor(R.color.white));
+                ImageView notificationIcon = (ImageView) convertView.findViewById(R.id.notification_image);
+                notificationIcon.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher));
+            }
         }
 
         return convertView;

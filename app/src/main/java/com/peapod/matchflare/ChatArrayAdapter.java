@@ -4,6 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -73,13 +76,14 @@ public class ChatArrayAdapter extends ArrayAdapter {
         chatText = (TextView) row.findViewById(R.id.single_message);
 
         String name = "";
+
         if (chatMessageObj.sender_contact_id == anonymousID) {
             name = "Matcher";
         }
         else {
-            name = chatMessageObj.guessed_full_name;
+            name = chatMessageObj.guessed_full_name.split(" ", 2)[0];
         }
-        chatText.setText(name + ": " + chatMessageObj.content);
+
         Style.toOpenSans(getContext(),chatText,"light");
 
         //Add timestamp
@@ -103,6 +107,13 @@ public class ChatArrayAdapter extends ArrayAdapter {
         timeStamp.setText(formattedDate);
         timeStamp.setTextSize(sixDp);
 
+        if (chatMessageObj.timeShowing) {
+            timeStamp.setVisibility(View.VISIBLE);
+        }
+        else {
+            timeStamp.setVisibility(View.INVISIBLE);
+        }
+
         Style.toOpenSans(getContext(),timeStamp,"light");
         timeStamp.setTextColor(getContext().getResources().getColor(R.color.light_gray));
 
@@ -110,7 +121,8 @@ public class ChatArrayAdapter extends ArrayAdapter {
             chatText.setBackgroundResource(R.drawable.final_chat_gray);
             singleMessageContainer.setGravity(Gravity.RIGHT);
             singleMessageContainer.setPadding(twoDp, twoDp, twoDp, twoDp);
-            chatText.setText("Me: " + chatMessageObj.content);
+            name = "Me";
+
             chatText.setTextColor(Color.BLACK);
 
             RelativeLayout.LayoutParams dateParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -129,8 +141,7 @@ public class ChatArrayAdapter extends ArrayAdapter {
         else {
             chatText.setBackgroundResource(R.drawable.final_chat_blue);
             singleMessageContainer.setGravity(Gravity.LEFT);
-            singleMessageContainer.setPadding(twoDp,twoDp,twoDp,twoDp);
-            chatText.setText(chatMessageObj.guessed_full_name + ": " + chatMessageObj.content);
+            singleMessageContainer.setPadding(twoDp, twoDp, twoDp, twoDp);
             chatText.setTextColor(Color.BLACK);
 
             RelativeLayout.LayoutParams dateParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -146,7 +157,12 @@ public class ChatArrayAdapter extends ArrayAdapter {
             chatText.setLayoutParams(containerParams);
 
         }
+        //chatText.setMovementMethod(LinkMovementMethod.getInstance());
+        chatText.setAutoLinkMask(Linkify.ALL);
+        chatText.setText(Html.fromHtml("<b>" + name + ": " + "</b>" + chatMessageObj.content + ""));
 
+        //displayText.setText(nodes[position].toString());
+        //chatText.setText("woo");
         return row;
     }
 

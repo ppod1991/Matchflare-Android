@@ -16,6 +16,7 @@ public class ChatMessage {
     public ArrayList<ChatMessage> history;
     public String created_at;
     public Match pair;
+    public boolean timeShowing = false;
 
     public ChatMessage(String myContent) {
         content = myContent;

@@ -31,6 +31,8 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class GCMBroadcastReceiverCompat extends BroadcastReceiver implements Callback<StringResponse> {
+
+
     @Override
     public void onReceive(Context context, Intent intent) {
         intent.setClass(context, GCMIntentService.class);

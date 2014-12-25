@@ -1,13 +1,16 @@
 package com.peapod.matchflare;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -61,7 +64,7 @@ public class ChatActivity extends Activity {
         root = findViewById(R.id.root_chat);
 
         chatDescription = (TextView) findViewById(R.id.chat_description);
-        Style.toOpenSans(this,chatDescription,"Light");
+        Style.toOpenSans(this,chatDescription,"light");
         chatDescription.setVisibility(View.INVISIBLE);
 
         progressIndicator.setVisibility(View.VISIBLE);
@@ -89,6 +92,20 @@ public class ChatActivity extends Activity {
             @Override
             public void onClick(View arg0) {
                 sendChatMessage();
+            }
+        });
+        chatArrayAdapter = new ChatArrayAdapter(this,R.layout.other_chat_message,0);
+        listView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+        listView.setAdapter(chatArrayAdapter);
+        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+
+        //to scroll the list view to bottom on data change
+        chatArrayAdapter.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                listView.setSelection(chatArrayAdapter.getCount() - 1);
             }
         });
 
@@ -134,15 +151,43 @@ public class ChatActivity extends Activity {
 
         super.onResume();
         this.start();
+
+        IntentFilter filter=new IntentFilter("com.peapod.matchflare.push_notification");
+        LocalBroadcastManager.getInstance(this).registerReceiver(onEvent, filter);
+
     }
 
     @Override
-    public void onStop() {
-        mHandler.removeCallbacks(pingServer);
-        mConnection.disconnect();
+    public void onPause() {
+        if (mHandler != null) {
+            mHandler.removeCallbacks(pingServer);
+        }
 
-        super.onStop();
+        if (mConnection != null) {
+            mConnection.disconnect();
+        }
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(onEvent);
+        super.onPause();
     }
+
+    private BroadcastReceiver onEvent=new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            Notification notification = (Notification) intent.getSerializableExtra("notification");
+            if (notification != null) {
+                Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+
+                long[] pattern = {0,100};
+                v.vibrate(pattern,-1);
+
+                Style.makeToast(ChatActivity.this,"New Notification!");
+            }
+
+        }
+    };
 
     Runnable pingServer = new Runnable() {
 
@@ -160,36 +205,36 @@ public class ChatActivity extends Activity {
         chatDescription.setVisibility(View.VISIBLE);
         if (m.chat_id == chat_id) {  //If this is the main chat
             if (m.first_matchee.contact_id == thisUserContactId) {  //Which user is the current user
-                description = "Chat with " + m.second_matchee.guessed_full_name + "!";
+                description = "Chat with " + firstName(m.second_matchee.guessed_full_name) + "!";
             }
             else if (m.second_matchee.contact_id == thisUserContactId) {
-                description = "Chat with " + m.first_matchee.guessed_full_name + "!";
+                description = "Chat with " + firstName(m.first_matchee.guessed_full_name) + "!";
             }
 
         }
         else if (m.first_matchee.matcher_chat_id == chat_id || m.second_matchee.matcher_chat_id == chat_id)  { //If this is a chat with the matcher...
             if (m.first_matchee.contact_id == thisUserContactId) {  //If this user is asking the matcher (and is first matchee)
                 if (m.is_anonymous) {
-                    description = "Ask your matcher about " + m.second_matchee.guessed_full_name + "!";
+                    description = "Ask your matcher about " + firstName(m.second_matchee.guessed_full_name) + "!";
                 }
                 else {
-                    description = "Ask " + m.matcher.guessed_full_name + " about " + m.second_matchee.guessed_full_name + "!";
+                    description = "Ask " + firstName(m.matcher.guessed_full_name) + " about " + firstName(m.second_matchee.guessed_full_name) + "!";
                 }
             }
             else if (m.second_matchee.contact_id == thisUserContactId) { //If this user is asking the matcher (and is second matchee)
                 if (m.is_anonymous) {
-                    description = "Ask your matcher about " + m.first_matchee.guessed_full_name + "!";
+                    description = "Ask your matcher about " + firstName(m.first_matchee.guessed_full_name) + "!";
                 }
                 else {
-                    description = "Ask " + m.matcher.guessed_full_name + " about " + m.first_matchee.guessed_full_name + "!";
+                    description = "Ask " + firstName(m.matcher.guessed_full_name) + " about " + firstName(m.first_matchee.guessed_full_name) + "!";
                 }
             }
             else if (m.matcher.contact_id == thisUserContactId) { //If this user is the matcher
                     if (m.first_matchee.matcher_chat_id == chat_id) { //Determine which matchee the other chatter is
-                        description = "Answer questions from " + m.first_matchee.guessed_full_name + " about " + m.second_matchee.guessed_full_name + "!";
+                        description = "Answer " + firstName(m.first_matchee.guessed_full_name) + "'s questions about " + firstName(m.second_matchee.guessed_full_name);
                     }
                     else if (m.second_matchee.matcher_chat_id == chat_id) {
-                        description = "Answer questions from " + m.second_matchee.guessed_full_name + " about " + m.first_matchee.guessed_full_name + "!";
+                        description = "Answer " + firstName(m.second_matchee.guessed_full_name) + "'s questions about " + firstName(m.first_matchee.guessed_full_name);
                     }
             }
         }
@@ -199,6 +244,10 @@ public class ChatActivity extends Activity {
 
         chatDescription.setText(description);
     }
+
+    public String firstName(String fullName) {
+        return fullName.split(" ", 2)[0];
+    };
     /*
      * Initiates a web-socket connection to send the node path to company
      */
@@ -233,16 +282,8 @@ public class ChatActivity extends Activity {
                     if (m.type.equals("history")) {
 
                         if (m.pair.is_anonymous) {
-                            //chatArrayAdapter.setAnonymousID(m.pair.matcher.contact_id);
-                            chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.other_chat_message,m.pair.matcher.contact_id);
+                            chatArrayAdapter.setAnonymousID(m.pair.matcher.contact_id);
                         }
-                        else {
-                            chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.other_chat_message,0);
-                        }
-
-                        listView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
-                        listView.setAdapter(chatArrayAdapter);
-                        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position,
@@ -251,30 +292,28 @@ public class ChatActivity extends Activity {
                                 TextView dateStamp = (TextView) view.findViewById(R.id.date_field);
                                 if (dateStamp.getVisibility() == View.VISIBLE) {
                                     dateStamp.setVisibility(View.INVISIBLE);
+                                    chatArrayAdapter.chatMessageList.get(position).timeShowing = false;
                                 }
                                 else {
+                                    chatArrayAdapter.chatMessageList.get(position).timeShowing = true;
                                     dateStamp.setVisibility(View.VISIBLE);
                                 }
                             }
                         });
-
-                        //to scroll the list view to bottom on data change
-                        chatArrayAdapter.registerDataSetObserver(new DataSetObserver() {
-                            @Override
-                            public void onChanged() {
-                                super.onChanged();
-                                listView.setSelection(chatArrayAdapter.getCount() - 1);
-                            }
-                        });
-                        
                         chatArrayAdapter.chatMessageList = m.history;
                         thisMatch = m.pair;
                         listView.setSelection(chatArrayAdapter.getCount() - 1);
+
                         progressIndicator.setVisibility(View.GONE);
                         root.setVisibility(View.VISIBLE);
                         ChatActivity.this.setChatDescription(thisMatch);
                     }
                     else if (m.type.equals("message")) {
+                        if (m.sender_contact_id != ((Global) ChatActivity.this.getApplication()).thisUser.contact_id) {
+                            Vibrator v = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+                            // Vibrate for 500 milliseconds
+                            v.vibrate(100);
+                        }
                         chatArrayAdapter.add(m);
                     }
                     else if (m.type.equals("error")) {

@@ -27,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -81,6 +82,7 @@ public class VerificationActivity extends Activity implements Button.OnClickList
     LinearLayout pictureLayout;
     LinearLayout codeLayout;
     boolean finishedProcessingContacts;
+    TextView genderPreferenceErrorMessage;
     View progressIndicator;
     boolean toVerify = false;
 
@@ -110,6 +112,7 @@ public class VerificationActivity extends Activity implements Button.OnClickList
         progressIndicator = findViewById(R.id.progress_indicator);
         progressIndicator.setVisibility(View.GONE);
         imageSkipButton.setText("Skip");
+        genderPreferenceErrorMessage = (TextView) findViewById(R.id.gender_preference_error_message);
 
         Style.toOpenSans(this,verificationCode,"light");
         Style.toOpenSans(this,maleButton,"light");
@@ -122,6 +125,7 @@ public class VerificationActivity extends Activity implements Button.OnClickList
         Style.toOpenSans(this,nameButton,"light");
         Style.toOpenSans(this,preferenceButton,"light");
         Style.toOpenSans(this,imageSkipButton,"light");
+        Style.toOpenSans(this,genderPreferenceErrorMessage,"light");
         Style.toOpenSans(this,nameInstructions,"regular");
         Style.toOpenSans(this,genderInstructions,"regular");
         Style.toOpenSans(this,smsInstructions,"regular");
@@ -204,9 +208,25 @@ public class VerificationActivity extends Activity implements Button.OnClickList
     public void onClick(View view) {
 
         if (view.getId() == R.id.name_button) {
-            toVerifyPerson.guessed_full_name = fullNameField.getText().toString();
-            nameLayout.setVisibility(View.GONE);
-            genderLayout.setVisibility(View.VISIBLE);
+            String potentialName = fullNameField.getText().toString().trim();
+            String errorMessage = "";
+            if (potentialName.length() <= 0) {
+                errorMessage = "You need to enter your first and last name";
+                nameInstructions.setText(errorMessage);
+                nameInstructions.setTextColor(getResources().getColor(R.color.matchflare_pink));
+            }
+            else if (!potentialName.contains(" ")) {
+                errorMessage = "You need to enter your first and last name";
+                nameInstructions.setText(errorMessage);
+                nameInstructions.setTextColor(getResources().getColor(R.color.matchflare_pink));
+            }
+            else {
+                toVerifyPerson.guessed_full_name = fullNameField.getText().toString();
+                nameLayout.setVisibility(View.GONE);
+                genderLayout.setVisibility(View.VISIBLE);
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+            }
+
         }
         else if (view.getId() == R.id.gender_preference_button) {
             ArrayList<String> genderPreferences = new ArrayList<String>();
@@ -222,6 +242,11 @@ public class VerificationActivity extends Activity implements Button.OnClickList
                 toVerifyPerson.gender_preferences = genderPreferences;
                 preferenceLayout.setVisibility(View.GONE);
                 pictureLayout.setVisibility(View.VISIBLE);
+            }
+            else {
+                genderPreferenceErrorMessage.setText("Must choose at least one preference.");
+                genderPreferenceErrorMessage.setVisibility(View.VISIBLE);
+
             }
         }
         else if (view.getId() == R.id.skip_picture_button) {
@@ -277,7 +302,8 @@ public class VerificationActivity extends Activity implements Button.OnClickList
             @Override
             public void success(StringResponse response, Response response2) {
                 imageURL = response.response;
-                Picasso.with(VerificationActivity.this).load(response.response).into(profileThumbnail);
+                Picasso.with(VerificationActivity.this).load(response.response).fit().centerInside().transform(new CircleTransform()).into(profileThumbnail);
+
                 imageSkipButton.setText("Next");
             }
 
@@ -316,6 +342,22 @@ public class VerificationActivity extends Activity implements Button.OnClickList
             startActivity(i);
             finish();
             Style.makeToast(VerificationActivity.this,"Get Ready, Cupid!");
+
+            String SENDER_ID="614720100487";
+            GCMRegistrarCompat.checkDevice(VerificationActivity.this);
+            if (BuildConfig.DEBUG) {
+                GCMRegistrarCompat.checkManifest(VerificationActivity.this);
+            }
+
+            final String regId=GCMRegistrarCompat.getRegistrationId(VerificationActivity.this);
+
+            if (regId.length() == 0) {
+                new RegisterTask(VerificationActivity.this).execute(SENDER_ID, person.contact_id + "");
+            } else
+            {
+                Log.d(getClass().getSimpleName(), "Existing registration: " + regId);
+            }
+
         }
 
         @Override
@@ -336,8 +378,9 @@ public class VerificationActivity extends Activity implements Button.OnClickList
       if (requestCode == 2) {
           if (resultCode == RESULT_OK) {
                 imageURL = data.getStringExtra("image_URL");
-                Picasso.with(this).load(imageURL).into(profileThumbnail);
-                imageSkipButton.setText("Next");
+                Picasso.with(this).load(imageURL).fit().centerInside().transform(new CircleTransform()).into(profileThumbnail);
+
+              imageSkipButton.setText("Next");
           }
       }
     };

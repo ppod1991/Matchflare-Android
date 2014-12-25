@@ -51,21 +51,25 @@
 
         <activity
             android:name=".NotificationActivity"
+            android:parentActivityName=".PresentMatchesActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".EvaluateActivity"
+            android:parentActivityName=".NotificationActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".ChatActivity"
+            android:parentActivityName=".NotificationActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@style/NoTitleBarTheme">
         </activity>
         <!-- <activity -->
         <!-- android:name="com.peapod.matchflare.RegistrationActivity" -->
@@ -100,12 +104,14 @@
         </activity>
         <activity
             android:name=".ViewMatchActivity"
+            android:parentActivityName=".NotificationActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".UpdateProfileActivity"
+            android:parentActivityName=".PresentMatchesActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="Matchflare"
             android:screenOrientation="portrait" >

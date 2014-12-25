@@ -1,8 +1,13 @@
 package com.peapod.matchflare;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -73,8 +78,49 @@ public class NotificationActivity extends Activity{
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Map<String, Integer> optionsPending = new HashMap<String, Integer>();
+        optionsPending.put("contact_id",((Global) getApplication()).thisUser.contact_id);
+        ((Global) getApplication()).ui.getNotificationLists(optionsPending, new NotificationsListCallback());
 
 
+        IntentFilter filter=new IntentFilter("com.peapod.matchflare.push_notification");
+        LocalBroadcastManager.getInstance(this).registerReceiver(onEvent, filter);
+    }
+
+    @Override
+    public void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(onEvent);
+        super.onPause();
+    }
+
+
+    private BroadcastReceiver onEvent=new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            Notification notification = (Notification) intent.getSerializableExtra("notification");
+            if (notification != null) {
+                Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+
+                long[] pattern = {0,100};
+                v.vibrate(pattern,-1);
+
+                Map<String, Integer> options = new HashMap<String, Integer>();
+                int contact_id = ((Global) getApplication()).thisUser.contact_id;
+
+                if (contact_id > 0) {
+                    options.put("contact_id",contact_id);
+                    ((Global) getApplication()).ui.getNotificationLists(options, new NotificationsListCallback());
+                }
+            }
+
+        }
+    };
 
     public class NotificationListItemClickListener implements ExpandableListView.OnChildClickListener {
 
@@ -91,19 +137,9 @@ public class NotificationActivity extends Activity{
                 options.put("notification_id",chosenNotification.notification_id);
                 ((Global) getApplication()).ui.seeNotification(options, new seeNotificationCallback());
 
-                if (chosenNotification.notification_type.equals("MATCHEE_NEW_MATCH")) {
-                    Intent intent = new Intent(NotificationActivity.this, EvaluateActivity.class);
-                    intent.putExtra("pair_id",chosenNotification.pair_id);
-                    startActivity(intent);
-                }
-                else if (chosenNotification.notification_type.equals("MATCHEE_MATCH_ACCEPTED") ||
-                        chosenNotification.notification_type.equals("MATCHER_QUESTION_ASKED") ||
-                        chosenNotification.notification_type.equals("MATCHEE_QUESTION_ANSWERED") ||
-                        chosenNotification.notification_type.equals("MATCHEE_MESSAGE_SENT")) {
-                    Intent intent = new Intent(NotificationActivity.this, ChatActivity.class);
-                    intent.putExtra("chat_id",chosenNotification.chat_id);
-                    intent.putExtra("pair_id", chosenNotification.pair_id);
-                    startActivity(intent);
+                Intent i = Notification.makeIntent(NotificationActivity.this,chosenNotification);
+                if (i != null) {
+                    startActivity(i);
                 }
             }
             else if (selected instanceof Match) {

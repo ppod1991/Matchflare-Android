@@ -4,10 +4,13 @@ import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -117,6 +120,38 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
     }
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter filter=new IntentFilter("com.peapod.matchflare.push_notification");
+        LocalBroadcastManager.getInstance(this).registerReceiver(onEvent, filter);
+        checkChatsForUnreadMessages();
+    }
+
+    @Override
+    public void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(onEvent);
+        super.onPause();
+    }
+
+    private BroadcastReceiver onEvent=new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            Notification notification = (Notification) intent.getSerializableExtra("notification");
+            if (notification != null) {
+                Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+
+                long[] pattern = {0,100};
+                v.vibrate(pattern,-1);
+
+                Style.makeToast(EvaluateActivity.this,"New Notification!");
+                checkChatsForUnreadMessages();
+            }
+
+        }
+    };
 
 
     private class ButtonTouchListener implements View.OnTouchListener {
@@ -218,6 +253,57 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
         return super.onOptionsItemSelected(item);
     }
 
+    public void checkChatsForUnreadMessages() {
+
+        int contact_id = ((Global) getApplication()).thisUser.contact_id;
+        if (contact_id > 0 && thisMatch != null) {
+            Map<String, Integer> options = new HashMap<String, Integer>();
+            options.put("contact_id",contact_id);
+            options.put("chat_id",thisMatch.chat_id);
+            ((Global) getApplication()).ui.hasUnread(options, new Callback<Boolean> () {
+
+                @Override
+                public void success(Boolean aBoolean, Response response) {
+                    if (aBoolean != null && aBoolean.booleanValue() == true) {
+                        chatButton.setImageDrawable(EvaluateActivity.this.getResources().getDrawable(R.drawable.new_message_chat_button));
+                    }
+                    else {
+                        chatButton.setImageDrawable(EvaluateActivity.this.getResources().getDrawable(R.drawable.chat_button));
+
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Log.e("Failed to check if chat has unread messages",error.toString());
+                }
+            });
+
+            Map<String, Integer> options2 = new HashMap<String, Integer>();
+            options2.put("contact_id",((Global) getApplication()).thisUser.contact_id);
+            options2.put("chat_id",thisMatchee.matcher_chat_id);
+            ((Global) getApplication()).ui.hasUnread(options2, new Callback<Boolean> () {
+
+                @Override
+                public void success(Boolean aBoolean, Response response) {
+                    if (aBoolean != null && aBoolean.booleanValue()) {
+                        askButton.setImageDrawable(EvaluateActivity.this.getResources().getDrawable(R.drawable.new_message_chat_button));
+                    }
+                    else {
+                        askButton.setImageDrawable(EvaluateActivity.this.getResources().getDrawable(R.drawable.ask_button));
+
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Log.e("Failed to check if chat has unread messages",error.toString());
+                }
+            });
+        }
+
+
+    }
     public void setMatcheeName() {
 
         //Determine which person in the match the current user is...
@@ -255,41 +341,7 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
             matchDescription.setText("thinks you'd be good with");
         }
 
-        Map<String, Integer> options = new HashMap<String, Integer>();
-        options.put("contact_id",((Global) getApplication()).thisUser.contact_id);
-        options.put("chat_id",thisMatch.chat_id);
-        ((Global) getApplication()).ui.hasUnread(options, new Callback<Boolean> () {
 
-            @Override
-            public void success(Boolean aBoolean, Response response) {
-                if (aBoolean != null && aBoolean.booleanValue() == true) {
-                    chatButton.setImageDrawable(EvaluateActivity.this.getResources().getDrawable(R.drawable.new_message_chat_button));
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.e("Failed to check if chat has unread messages",error.toString());
-            }
-        });
-
-        Map<String, Integer> options2 = new HashMap<String, Integer>();
-        options2.put("contact_id",((Global) getApplication()).thisUser.contact_id);
-        options2.put("chat_id",thisMatchee.matcher_chat_id);
-        ((Global) getApplication()).ui.hasUnread(options2, new Callback<Boolean> () {
-
-            @Override
-            public void success(Boolean aBoolean, Response response) {
-                if (aBoolean != null && aBoolean.booleanValue()) {
-                    askButton.setImageDrawable(EvaluateActivity.this.getResources().getDrawable(R.drawable.new_message_chat_button));
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.e("Failed to check if chat has unread messages",error.toString());
-            }
-        });
 
         Picasso.with(this).load(otherMatchee.image_url).fit().centerInside().transform(new CircleTransform()).into(otherMatcheeImageView);
         otherMatcheeName.setText(otherMatchee.guessed_full_name);
@@ -306,17 +358,30 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
 //            matcherName.setText("ERROR :( Try again.");
 //        }
 //
+        String statusText = "thinks you'd be good with";
         if (thisMatch.first_matchee.contact_status.equals("ACCEPT") && thisMatch.second_matchee.contact_status.equals("ACCEPT")) {
             chatButton.setVisibility(View.VISIBLE);
             matchButton.setVisibility(View.INVISIBLE);
             passButton.setVisibility(View.INVISIBLE);
+            statusText = "recommended " + otherMatchee.guessed_full_name + " and you both accepted!";
         }
-        else {
+        else if (thisMatchee.contact_status.equals("NOTIFIED")) {
             matchButton.setVisibility(View.VISIBLE);
             passButton.setVisibility(View.VISIBLE);
             chatButton.setVisibility(View.INVISIBLE);
+            statusText = "thinks you'd be good with";
+        }
+        else if (otherMatchee.contact_status.equals("NOTIFIED")) {
+            chatButton.setVisibility(View.VISIBLE);
+            matchButton.setVisibility(View.INVISIBLE);
+            passButton.setVisibility(View.INVISIBLE);
+            statusText = "recommended " + otherMatchee.guessed_full_name + " and you accepted. Waiting for...";
         }
 
+        matchDescription.setText(statusText);
+
+
+        checkChatsForUnreadMessages();
     }
 
     @Override

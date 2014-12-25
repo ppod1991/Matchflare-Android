@@ -1,6 +1,7 @@
 package com.peapod.matchflare;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -43,7 +44,7 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
     PageIndicator mIndicator;
     RelativeLayout splashLogo;
     RelativeLayout instructionPager;
-
+    View progressIndicator;
     Button registerButton;
     Button nextButton;
 
@@ -54,15 +55,45 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
     boolean finishedProcessingContacts = false;
 
     MatchesAndPairs matchesAndPairs;
-
+    ArrayList<Intent> nextIntents = new ArrayList<Intent>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        Intent backIntent = new Intent(this, PresentMatchesActivity.class);
+        nextIntents.add(backIntent);
+
+
+        //If splash was called from a tapped notificaton (from GCM), then find out where the notification was leading to and add to intent[] for pendingintent
+        Notification receivedNotification = (Notification) getIntent().getSerializableExtra("notification");
+        if (receivedNotification != null) {
+
+            Map<String,Integer> options = new HashMap<String,Integer>();
+            options.put("notification_id",receivedNotification.notification_id);
+            ((Global) getApplication()).ui.seeNotification(options, new Callback<StringResponse>() {
+                @Override
+                public void success(StringResponse stringResponse, Response response) {
+                    Log.e("Successfully saw notification", stringResponse.response);
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Log.e("Failed to see notification", error.toString());
+
+                }
+            });
+
+            Intent nextIntent = Notification.makeIntent(SplashActivity.this,receivedNotification);
+            if (nextIntent != null) {
+                nextIntents.add(nextIntent);
+            }
+        };
+
         splashLogo = (RelativeLayout) findViewById(R.id.splash_logo);
         instructionPager = (RelativeLayout) findViewById(R.id.instruction_pager);
-
+        progressIndicator = findViewById(R.id.progress_indicator);
+        progressIndicator.bringToFront();
         mAdapter = new FragmentAdapter(getSupportFragmentManager());
         mPager = (ViewPager)findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
@@ -72,6 +103,8 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
 
         registerButton = (Button) findViewById(R.id.register_button);
         nextButton = (Button) findViewById(R.id.start_matching);
+        progressIndicator.setVisibility(View.GONE);
+        mPager.setVisibility(View.VISIBLE);
         Style.toOpenSans(this,registerButton,"light");
         Style.toOpenSans(this,nextButton,"light");
 
@@ -79,12 +112,24 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
             @Override
             public void onClick(View view) {
                 if (reachedFinalInstruction){
-                    Style.makeToast(SplashActivity.this,"Presenting Matches");
+
                     toPresentMatches = true;
                     if (finishedProcessingContacts) {
-                        Intent i = new Intent(SplashActivity.this, PresentMatchesActivity.class);
+                        Intent i = nextIntents.get(0);
                         i.putExtra("matches", (Serializable) matchesAndPairs.matches);
-                        startActivity(i);
+                        PendingIntent pendingIntent = PendingIntent.getActivities(SplashActivity.this,0,nextIntents.toArray(new Intent[nextIntents.size()]),0);
+                        try {
+                            pendingIntent.send();
+                        }
+                        catch (PendingIntent.CanceledException e) {
+                            Log.e("Pending intent cancelled",e.toString());
+                        }
+                    }
+                    else {
+                        nextButton.setEnabled(false);
+                        registerButton.setEnabled(false);
+                        progressIndicator.setVisibility(View.VISIBLE);
+                        mPager.setVisibility(View.INVISIBLE);
                     }
                 }
                 else {
@@ -155,6 +200,7 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
         Set<Person> contact_objects;
     }
 
+
     class ProcessContactsTask extends AsyncTask<Integer, Void, Boolean>{
 
         Integer contactId;
@@ -216,6 +262,8 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
         protected void onPostExecute(Boolean result) {
             finishedProcessingContacts = true;
 
+
+
             if (result.booleanValue()) { //If successful...
                 Style.makeToast(SplashActivity.this,"Successfully processed contacts");
                 if (contactId == null) {
@@ -245,6 +293,29 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
                     Style.makeToast(SplashActivity.this, "Could not process your new contacts");
                 }
             }
+
+            if (contactId != null && contactId > 0) {
+                String SENDER_ID="614720100487";
+                GCMRegistrarCompat.checkDevice(SplashActivity.this);
+                if (BuildConfig.DEBUG) {
+                    GCMRegistrarCompat.checkManifest(SplashActivity.this);
+                }
+
+                final String regId=GCMRegistrarCompat.getRegistrationId(SplashActivity.this);
+
+                if (regId.length() == 0) {
+                    new RegisterTask(SplashActivity.this).execute(SENDER_ID, contactId + "");
+                } else
+                {
+                    Log.d(getClass().getSimpleName(), "Existing registration: " + regId);
+                }
+            }
+
+            nextButton.setEnabled(true);
+            registerButton.setEnabled(true);
+            progressIndicator.setVisibility(View.GONE);
+            mPager.setVisibility(View.VISIBLE);
+
         }
     }
 
@@ -258,9 +329,16 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
         else
             task.execute(person.contact_id);
 
-        Intent i = new Intent(this,PresentMatchesActivity.class);
-        //Intent i = new Intent(this,VerificationActivity.class);
-        startActivity(i);
+//        Intent i = new Intent(this,PresentMatchesActivity.class);
+//        //Intent i = new Intent(this,VerificationActivity.class);
+//        startActivity(i);
+        PendingIntent pendingIntent = PendingIntent.getActivities(SplashActivity.this,0,nextIntents.toArray(new Intent[nextIntents.size()]),0);
+        try {
+            pendingIntent.send();
+        }
+        catch (PendingIntent.CanceledException e) {
+            Log.e("Pending intent cancelled",e.toString());
+        }
     }
 
     @Override

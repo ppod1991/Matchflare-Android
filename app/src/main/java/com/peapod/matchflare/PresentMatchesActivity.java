@@ -110,7 +110,7 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
     TextView notificationCountView;
     NotificationLists notificationsList = null;
 
-    static final String SENDER_ID="614720100487";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -294,11 +294,9 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
             ((Global)getApplication()).ui.getMatches(((Global) getApplication()).thisUser, options, new MatchesCallback());
         }
         else {
-
             presentNextMatch();
             progressIndicator.setVisibility(View.GONE);
             root.setVisibility(View.VISIBLE);
-
 
         }
 
@@ -432,7 +430,8 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
     @Override
     public void onDialogSetMatchee(Person selectedPerson, MatcheeOptionsDialog dialog) {
         Log.e("Person selected", "TO REMOVE!");
-
+        currentMatch.wasEdited = true;
+        showMatchButtons();
         if (dialog.isFirstMatchee) {
             currentMatch.first_matchee = selectedPerson;
             ((TextView) currentLayout.findViewById(R.id.first_contact_textview)).setText(currentMatch.first_matchee.guessed_full_name);
@@ -638,24 +637,43 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
                 }
             }
             else if (v.getId() == R.id.pass_button) {
-                changeResult("no match",300);
-                passButton.setVisibility(View.INVISIBLE);
-                matchButton.setVisibility(View.INVISIBLE);
-                anonymousCheckbox.setVisibility(View.INVISIBLE);
-                changeDisplayText(eloInstructions);
+                if (currentMatch.wasEdited) {
+                    presentNextMatch();
+                }
+                else {
+                    changeResult("no match",300);
+                    hideMatchButtons();
+                }
+
                 //eloInstructions.setVisibility(View.VISIBLE);
             }
             else if (v.getId() == R.id.first_contact_textview || v.getId() == R.id.first_matchee_image_view) {
-                currentMatch.match_status = "FIRST_CONTACT_WINS";
-                ui.addMatch(currentMatch, null, new postMatchCallback());
-                changeResult(currentMatch.first_matchee.guessed_full_name.toLowerCase() + " wins",700);
-                presentNextMatch();
+                if (currentMatch.wasEdited) {
+
+                    showMatchButtons();
+                    changeResult("edited, can't rate",700);
+                }
+                else {
+                    currentMatch.match_status = "FIRST_CONTACT_WINS";
+                    ui.addMatch(currentMatch, null, new postMatchCallback());
+                    changeResult(currentMatch.first_matchee.guessed_full_name.toLowerCase() + " wins",700);
+                    presentNextMatch();
+                }
+
+
             }
             else if (v.getId() == R.id.second_contact_textview || v.getId() == R.id.second_matchee_image_view) {
-                currentMatch.match_status = "SECOND_CONTACT_WINS";
-                ui.addMatch(currentMatch, null, new postMatchCallback());
-                changeResult(currentMatch.second_matchee.guessed_full_name.toLowerCase() + " wins",700);
-                presentNextMatch();
+                if (currentMatch.wasEdited) {
+                    showMatchButtons();
+                    changeResult("edited, can't rate",700);
+                }
+                else {
+                    currentMatch.match_status = "SECOND_CONTACT_WINS";
+                    ui.addMatch(currentMatch, null, new postMatchCallback());
+                    changeResult(currentMatch.second_matchee.guessed_full_name.toLowerCase() + " wins",700);
+                    presentNextMatch();
+                }
+
             }
             else if (v.getId() == R.id.first_option_dots) {
                 showOptionsDialog(true, currentMatch.first_matchee);
@@ -671,6 +689,19 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
     }
 
 
+    public void showMatchButtons() {
+        passButton.setVisibility(View.VISIBLE);
+        matchButton.setVisibility(View.VISIBLE);
+        anonymousCheckbox.setVisibility(View.VISIBLE);
+        changeDisplayText(matchInstructions);
+    }
+
+    public void hideMatchButtons() {
+        passButton.setVisibility(View.INVISIBLE);
+        matchButton.setVisibility(View.INVISIBLE);
+        anonymousCheckbox.setVisibility(View.INVISIBLE);
+        changeDisplayText(eloInstructions);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -678,6 +709,14 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         getMenuInflater().inflate(R.menu.present_matches, menu);
 
         View count = menu.findItem(R.id.notifications_icon).getActionView();
+        int contact_id = ((Global) getApplication()).thisUser.contact_id;
+        if (!(contact_id > 0)){
+            MenuItem updateProfileButton = menu.findItem(R.id.update_profile);
+            updateProfileButton.setTitle("Register");
+            MenuItem notificationsButton = menu.findItem(R.id.notifications_icon);
+            notificationsButton.setVisible(false);
+        }
+
         notificationCountView = (TextView) count.findViewById(R.id.notification_count);
 
         count.setOnClickListener(new View.OnClickListener() {
@@ -691,14 +730,17 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         if (notificationsList != null) {
             if (notificationsList.notifications.size() > 0) {
                 notificationCountView.setVisibility(View.VISIBLE);
-                notificationCountView.setText("1");
+                notificationCountView.setText(notificationsList.notifications.size() + "");
             }
             else {
                 notificationCountView.setText("0");
                 notificationCountView.setVisibility(View.GONE);
             }
         }
-
+        else {
+            notificationCountView.setText("0");
+            notificationCountView.setVisibility(View.GONE);
+        }
 
         return true;
     }
@@ -722,10 +764,18 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
                 startActivity(intent);
                 return true;
             case R.id.update_profile:
-                //intent = new Intent(this, NotificationActivity.class);
-                intent = new Intent(this, UpdateProfileActivity.class);
-                intent.putExtra("this_user", ((Global) getApplication()).thisUser);
-                startActivity(intent);
+                int contact_id = ((Global) getApplication()).thisUser.contact_id;
+                if (!(contact_id > 0)){
+                    intent = new Intent(this, VerificationActivity.class);
+                    startActivity(intent);
+                }
+                else {
+                    //intent = new Intent(this, NotificationActivity.class);
+                    intent = new Intent(this, UpdateProfileActivity.class);
+                    intent.putExtra("this_user", ((Global) getApplication()).thisUser);
+                    startActivity(intent);
+                }
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -789,16 +839,19 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         {
             Log.e("Match successfully posted with score:", response + "");
             Integer difference = response - matchflareScore;
-            matchflareScore = response;
-            //((TextView) scoreDisplay.getNextView()).setTextColor(getResources().getColor(R.color.matchflare_pink));
-            scoreDisplay.setText("+" + difference);
-            scoreDisplay.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    //((TextView) scoreDisplay.getNextView()).setTextColor(getResources().getColor(R.color.light_gray));
-                    scoreDisplay.setText("" + matchflareScore);
-                }
-            }, 500);
+            if (difference > 0) {
+                matchflareScore = response;
+                //((TextView) scoreDisplay.getNextView()).setTextColor(getResources().getColor(R.color.matchflare_pink));
+                scoreDisplay.setText("+" + difference);
+                scoreDisplay.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //((TextView) scoreDisplay.getNextView()).setTextColor(getResources().getColor(R.color.light_gray));
+                        scoreDisplay.setText("" + matchflareScore);
+                    }
+                }, 500);
+            }
+
         }
     }
 
@@ -809,11 +862,8 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         long[] pattern = {0,40};
         v.vibrate(pattern,-1);
 
+        showMatchButtons();
 
-        passButton.setVisibility(View.VISIBLE);
-        matchButton.setVisibility(View.VISIBLE);
-        anonymousCheckbox.setVisibility(View.VISIBLE);
-        changeDisplayText(matchInstructions);
 
         if (currentMatch == null) {
             if (matches.size() > 1) {
@@ -865,16 +915,7 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         }
     }
 
-    //Register device for GCM (if not already registered)
-    private static class RegisterTask extends GCMRegistrarCompat.BaseRegisterTask {
-        RegisterTask(Context context) {
-            super(context);
-        }
-        @Override
-        public void onPostExecute(String regid) {
-            Log.d(getClass().getSimpleName(), "registered as: " + regid); Toast.makeText(context, regid, Toast.LENGTH_LONG).show();
-        }
-    }
+
 
     @Override
     public void onResume() {
@@ -883,13 +924,18 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         if (((Global) getApplication()).thisUser.contact_id > 0) {
             //Get and set matchflare score if this is a registered user
             Map<String, Integer> options = new HashMap<String, Integer>();
-            options.put("contact_id",((Global) getApplication()).thisUser.contact_id);
-            ((Global) getApplication()).ui.getScore(options, new postMatchCallback());
-            ((Global) getApplication()).ui.getNotificationLists(options, new NotificationsListCallback());
+            int contact_id = ((Global) getApplication()).thisUser.contact_id;
+
+            if (contact_id > 0) {
+                options.put("contact_id",contact_id);
+                ((Global) getApplication()).ui.getScore(options, new postMatchCallback());
+                ((Global) getApplication()).ui.getNotificationLists(options, new NotificationsListCallback());
+            }
+
 
         };
 
-        IntentFilter filter=new IntentFilter(Global.ACTION_EVENT);
+        IntentFilter filter=new IntentFilter("com.peapod.matchflare.push_notification");
         LocalBroadcastManager.getInstance(this).registerReceiver(onEvent, filter);
     }
 
@@ -906,8 +952,18 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         {
             Notification notification = (Notification) intent.getSerializableExtra("notification");
             if (notification != null) {
-                Toast toast = Toast.makeText(context,notification.push_message,Toast.LENGTH_LONG);
-                toast.show();
+                Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+
+                long[] pattern = {0,100};
+                v.vibrate(pattern,-1);
+
+                Map<String, Integer> options = new HashMap<String, Integer>();
+                int contact_id = ((Global) getApplication()).thisUser.contact_id;
+
+                if (contact_id > 0) {
+                    options.put("contact_id",contact_id);
+                    ((Global) getApplication()).ui.getNotificationLists(options, new NotificationsListCallback());
+                }
             }
 
         }
@@ -928,18 +984,18 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         public void success(NotificationLists response, Response response2) {
             Log.e("Notifications Lists retrieved", response.toString());
             notificationsList = response;
+
             if (notificationCountView != null) {
+
+                notificationCountView.setText("0");
+                notificationCountView.setVisibility(View.GONE);
+
                 if (notificationsList.notifications.size() > 0) {
                     notificationCountView.setVisibility(View.VISIBLE);
-                    notificationCountView.setText("1");
-                }
-                else {
-                    notificationCountView.setText("0");
-                    notificationCountView.setVisibility(View.GONE);
+                    notificationCountView.setText(notificationsList.notifications.size() + "");
+
                 }
             }
-
-
         }
 
         @Override

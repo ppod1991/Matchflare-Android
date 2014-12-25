@@ -57,6 +57,7 @@ public class UpdateProfileActivity extends Activity implements View.OnClickListe
     LinearLayout preferenceLayout;
     LinearLayout pictureLayout;
     View progressIndicator;
+    TextView genderPreferenceErrorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +85,8 @@ public class UpdateProfileActivity extends Activity implements View.OnClickListe
         updateProfileButton = (Button) findViewById(R.id.update_profile_button);
         progressIndicator = findViewById(R.id.progress_indicator);
         progressIndicator.setVisibility(View.GONE);
+        genderPreferenceErrorMessage = (TextView) findViewById(R.id.gender_preference_error_message);
+
         //imageSkipButton.setText("Skip");
 
         Style.toOpenSans(this,maleButton,"light");
@@ -101,6 +104,7 @@ public class UpdateProfileActivity extends Activity implements View.OnClickListe
         Style.toOpenSans(this,smsInstructions,"regular");
         Style.toOpenSans(this,interestedInInstructions,"regular");
         Style.toOpenSans(this,updateProfileButton,"light");
+        Style.toOpenSans(this,genderPreferenceErrorMessage,"light");
 
         chooseImageButton.setOnClickListener(this);
         updateProfileButton.setOnClickListener(this);
@@ -145,7 +149,8 @@ public class UpdateProfileActivity extends Activity implements View.OnClickListe
         }
 
 
-        Picasso.with(this).load(toVerifyPerson.image_url).into(profileThumbnail);
+        Picasso.with(this).load(toVerifyPerson.image_url).fit().centerInside().transform(new CircleTransform()).into(profileThumbnail);
+
 
     }
 
@@ -154,22 +159,6 @@ public class UpdateProfileActivity extends Activity implements View.OnClickListe
     public void onClick(View view) {
 
         if (view.getId() == R.id.update_profile_button) {
-            //Do some validation! - NEED TO IMPLEMENT
-
-            progressIndicator.setVisibility(View.VISIBLE);
-            updateProfileButton.setEnabled(false);
-            toVerifyPerson.guessed_full_name = fullNameField.getText().toString();
-
-            if (imageURL != null && imageURL != "") {
-                toVerifyPerson.image_url = imageURL;
-            }
-
-            if (maleButton.isChecked()) {
-                toVerifyPerson.guessed_gender = "MALE";
-            }
-            else if (femaleButton.isChecked()) {
-                toVerifyPerson.guessed_gender = "FEMALE";
-            }
 
             ArrayList<String> genderPreferences = new ArrayList<String>();
             if (malesCheckBox.isChecked()) {
@@ -180,43 +169,67 @@ public class UpdateProfileActivity extends Activity implements View.OnClickListe
                 genderPreferences.add("FEMALE");
             }
 
-            if (genderPreferences.size() > 0) {
+
+            if (genderPreferences.size() <= 0) {
+                genderPreferenceErrorMessage.setVisibility(View.VISIBLE);
+                genderPreferenceErrorMessage.setText("Must choose at least one preference.");
+            }
+            else {
                 toVerifyPerson.gender_preferences = genderPreferences;
+
+                progressIndicator.setVisibility(View.VISIBLE);
+                updateProfileButton.setEnabled(false);
+                toVerifyPerson.guessed_full_name = fullNameField.getText().toString();
+
+                if (imageURL != null && imageURL != "") {
+                    toVerifyPerson.image_url = imageURL;
+                }
+
+                if (maleButton.isChecked()) {
+                    toVerifyPerson.guessed_gender = "MALE";
+                }
+                else if (femaleButton.isChecked()) {
+                    toVerifyPerson.guessed_gender = "FEMALE";
+                }
+
+
+                ((Global) getApplication()).ui.updateProfile(toVerifyPerson,new Callback<Person>() {
+                    @Override
+                    public void success(Person person, Response response) {
+                        Log.e("Successfully updated your profile", person.toString());
+
+                        ((Global) getApplication()).thisUser.guessed_gender = person.guessed_gender;
+                        ((Global) getApplication()).thisUser.gender_preferences = person.gender_preferences;
+                        ((Global) getApplication()).thisUser.image_url = person.image_url;
+
+
+                        progressIndicator.setVisibility(View.GONE);
+                        Style.makeToast(UpdateProfileActivity.this, "Profile Updated! How'd you get even more good looking?");
+
+                        Intent i = new Intent(UpdateProfileActivity.this,PresentMatchesActivity.class);
+                        i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        startActivity(i);
+                        finish();
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        Log.e("Failed to update the profile", error.toString());
+                        progressIndicator.setVisibility(View.GONE);
+                        Style.makeToast(UpdateProfileActivity.this, "Failed to update your profile. Try again.");
+                        updateProfileButton.setEnabled(true);
+                    }
+                });
+
             }
 
-            ((Global) getApplication()).ui.updateProfile(toVerifyPerson,new Callback<Person>() {
-                @Override
-                public void success(Person person, Response response) {
-                    Log.e("Successfully updated your profile", person.toString());
 
-                    ((Global) getApplication()).thisUser.guessed_gender = person.guessed_gender;
-                    ((Global) getApplication()).thisUser.gender_preferences = person.gender_preferences;
-                    ((Global) getApplication()).thisUser.image_url = person.image_url;
-
-
-                    progressIndicator.setVisibility(View.GONE);
-                    Style.makeToast(UpdateProfileActivity.this, "Profile Updated! How'd you get even more good looking?");
-
-                    Intent i = new Intent(UpdateProfileActivity.this,PresentMatchesActivity.class);
-                    i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(i);
-                    finish();
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    Log.e("Failed to update the profile", error.toString());
-                    progressIndicator.setVisibility(View.GONE);
-                    Style.makeToast(UpdateProfileActivity.this, "Failed to update your profile. Try again.");
-                    updateProfileButton.setEnabled(true);
-                }
-            });
-            //Make retrofit call to update this user -- NEED TO IMPLEMENT
         }
         else if (view.getId() == R.id.choose_picture_button) {
 
             Intent i = new Intent(UpdateProfileActivity.this,CropImageActivity.class);
             startActivityForResult(i, 2);
+
 
         }
     }
@@ -247,7 +260,8 @@ public class UpdateProfileActivity extends Activity implements View.OnClickListe
         if (requestCode == 2) {
             if (resultCode == RESULT_OK) {
                 imageURL = data.getStringExtra("image_URL");
-                Picasso.with(this).load(imageURL).into(profileThumbnail);
+                Picasso.with(this).load(imageURL).fit().centerInside().transform(new CircleTransform()).into(profileThumbnail);
+
                 imageSkipButton.setText("Next");
             }
         }
