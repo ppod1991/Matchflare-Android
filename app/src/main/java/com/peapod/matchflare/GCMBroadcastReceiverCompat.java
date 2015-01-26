@@ -52,7 +52,7 @@ public class GCMBroadcastReceiverCompat extends BroadcastReceiver implements Cal
                     .setEndpoint("https://matchflare.herokuapp.com")
                     .build();
             RestService ui = restAdapter.create(RestService.class);
-            ui.updateRegistrationId(((Global) context.getApplicationContext()).thisUser, this);
+            ui.updateGoogleRegistrationId(((Global) context.getApplicationContext()).thisUser, this);
 
       /* Do what ever you want with the regId eg. send it to your server */
         }

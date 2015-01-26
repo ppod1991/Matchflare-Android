@@ -89,7 +89,7 @@
     <orderEntry type="library" exported="" name="jackson-mapper-asl-1.9.7" level="project" />
     <orderEntry type="library" exported="" name="aws-android-sdk-2.1.5-core" level="project" />
     <orderEntry type="library" exported="" name="library-circular-1.0.2" level="project" />
-    <orderEntry type="library" exported="" name="wakeful-1.0.4" level="project" />
+    <orderEntry type="library" exported="" name="wakeful-1.0.5" level="project" />
     <orderEntry type="library" exported="" name="aws-android-sdk-2.1.5-cognito" level="project" />
     <orderEntry type="library" exported="" name="jackson-core-asl-1.9.7" level="project" />
     <orderEntry type="library" exported="" name="roundedimageview-1.5.0" level="project" />

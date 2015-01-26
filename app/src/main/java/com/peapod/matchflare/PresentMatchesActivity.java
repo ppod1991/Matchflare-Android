@@ -825,8 +825,12 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         }
     }
 
+    public class MatchflareScore {
+        int matchflare_score;
+    }
+
     //Retrofit callback for getting matches
-    private class postMatchCallback implements Callback<Integer> {
+    private class postMatchCallback implements Callback<MatchflareScore> {
         //Retrofit callback for process contacts
         @Override
         public void failure(RetrofitError err)
@@ -835,12 +839,12 @@ public class PresentMatchesActivity extends Activity implements Callback<StringR
         }
 
         @Override
-        public void success(Integer response, Response arg1)
+        public void success(MatchflareScore response, Response arg1)
         {
             Log.e("Match successfully posted with score:", response + "");
-            Integer difference = response - matchflareScore;
+            Integer difference = response.matchflare_score - matchflareScore;
             if (difference > 0) {
-                matchflareScore = response;
+                matchflareScore = response.matchflare_score;
                 //((TextView) scoreDisplay.getNextView()).setTextColor(getResources().getColor(R.color.matchflare_pink));
                 scoreDisplay.setText("+" + difference);
                 scoreDisplay.postDelayed(new Runnable() {

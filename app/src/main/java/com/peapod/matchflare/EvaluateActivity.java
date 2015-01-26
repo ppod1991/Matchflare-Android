@@ -253,6 +253,10 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
         return super.onOptionsItemSelected(item);
     }
 
+    public class UnseenObject {
+        Boolean has_unseen;
+    }
+
     public void checkChatsForUnreadMessages() {
 
         int contact_id = ((Global) getApplication()).thisUser.contact_id;
@@ -260,11 +264,11 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
             Map<String, Integer> options = new HashMap<String, Integer>();
             options.put("contact_id",contact_id);
             options.put("chat_id",thisMatch.chat_id);
-            ((Global) getApplication()).ui.hasUnread(options, new Callback<Boolean> () {
+            ((Global) getApplication()).ui.hasUnread(options, new Callback<UnseenObject> () {
 
                 @Override
-                public void success(Boolean aBoolean, Response response) {
-                    if (aBoolean != null && aBoolean.booleanValue() == true) {
+                public void success(UnseenObject aBoolean, Response response) {
+                    if (aBoolean != null && aBoolean.has_unseen.booleanValue() == true) {
                         chatButton.setImageDrawable(EvaluateActivity.this.getResources().getDrawable(R.drawable.new_message_chat_button));
                     }
                     else {
@@ -282,11 +286,11 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
             Map<String, Integer> options2 = new HashMap<String, Integer>();
             options2.put("contact_id",((Global) getApplication()).thisUser.contact_id);
             options2.put("chat_id",thisMatchee.matcher_chat_id);
-            ((Global) getApplication()).ui.hasUnread(options2, new Callback<Boolean> () {
+            ((Global) getApplication()).ui.hasUnread(options2, new Callback<UnseenObject> () {
 
                 @Override
-                public void success(Boolean aBoolean, Response response) {
-                    if (aBoolean != null && aBoolean.booleanValue()) {
+                public void success(UnseenObject aBoolean, Response response) {
+                    if (aBoolean != null && aBoolean.has_unseen.booleanValue()) {
                         askButton.setImageDrawable(EvaluateActivity.this.getResources().getDrawable(R.drawable.new_message_chat_button));
                     }
                     else {
@@ -317,6 +321,7 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
         }
         else {
             Style.makeToast(this,"ERROR! You are not in this match!");
+            return;
         }
 
 
@@ -333,12 +338,10 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
             }
             Picasso.with(this).load(matcherImage).fit().centerInside().transform(new CircleTransform()).into(matcherImageView);
             matcherName.setText("A friend");
-            matchDescription.setText("thinks you'd be good with");
         }
         else {
             Picasso.with(this).load(thisMatch.matcher.image_url).fit().centerInside().transform(new CircleTransform()).into(matcherImageView);
             matcherName.setText(thisMatch.matcher.guessed_full_name);
-            matchDescription.setText("thinks you'd be good with");
         }
 
 
@@ -372,7 +375,7 @@ public class EvaluateActivity extends Activity implements Callback<Match>, View.
             statusText = "thinks you'd be good with";
         }
         else if (otherMatchee.contact_status.equals("NOTIFIED")) {
-            chatButton.setVisibility(View.VISIBLE);
+            chatButton.setVisibility(View.INVISIBLE);
             matchButton.setVisibility(View.INVISIBLE);
             passButton.setVisibility(View.INVISIBLE);
             statusText = "recommended " + otherMatchee.guessed_full_name + " and you accepted. Waiting for...";

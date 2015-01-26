@@ -62,7 +62,7 @@ public class GCMIntentService extends GCMBaseIntentServiceCompat {
 
                     String notificationTitle = "Matchflare Notification!";
                     if (notification.notification_type != null) {
-                        if (notification.notification_type.equals("USER REMINDER")) {
+                        if (notification.notification_type.equals("USER_REMINDER")) {
                             notificationTitle = "What do you think of them?";
                         }
                         else if (notification.notification_type.equals("MATCHER_ONE_MATCH_ACCEPTED")) {

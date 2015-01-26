@@ -144,11 +144,11 @@ public class ViewMatchActivity extends Activity implements Callback<Match>, View
             Map<String, Integer> options = new HashMap<String, Integer>();
             options.put("contact_id",contact_id);
             options.put("chat_id",thisMatch.first_matchee.matcher_chat_id);
-            ((Global) getApplication()).ui.hasUnread(options, new Callback<Boolean> () {
+            ((Global) getApplication()).ui.hasUnread(options, new Callback<EvaluateActivity.UnseenObject> () {
 
                 @Override
-                public void success(Boolean aBoolean, Response response) {
-                    if (aBoolean != null && aBoolean.booleanValue() == true) {
+                public void success(EvaluateActivity.UnseenObject aBoolean, Response response) {
+                    if (aBoolean != null && aBoolean.has_unseen.booleanValue() == true) {
                         firstChatButton.setImageDrawable(ViewMatchActivity.this.getResources().getDrawable(R.drawable.new_message_chat_button));
                     }
                     else {
@@ -166,11 +166,11 @@ public class ViewMatchActivity extends Activity implements Callback<Match>, View
             Map<String, Integer> options2 = new HashMap<String, Integer>();
             options2.put("contact_id",((Global) getApplication()).thisUser.contact_id);
             options2.put("chat_id",thisMatch.second_matchee.matcher_chat_id);
-            ((Global) getApplication()).ui.hasUnread(options2, new Callback<Boolean> () {
+            ((Global) getApplication()).ui.hasUnread(options2, new Callback<EvaluateActivity.UnseenObject> () {
 
                 @Override
-                public void success(Boolean aBoolean, Response response) {
-                    if (aBoolean != null && aBoolean.booleanValue() == true) {
+                public void success(EvaluateActivity.UnseenObject aBoolean, Response response) {
+                    if (aBoolean != null && aBoolean.has_unseen.booleanValue() == true) {
                         secondChatButton.setImageDrawable(ViewMatchActivity.this.getResources().getDrawable(R.drawable.new_message_chat_button));
                     }
                     else {

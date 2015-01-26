@@ -255,7 +255,6 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
             }
 
             return new Boolean(true);
-
         };
 
         @Override

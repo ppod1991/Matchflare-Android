@@ -29,13 +29,13 @@ public interface RestService {
         void getMatch(@QueryMap Map<String, Integer> options, Callback<Match> cb);
 
         @POST("/postMatch")
-        void addMatch(@Body Match match, @QueryMap Map<String, Integer> options, Callback<Integer> cb);
+        void addMatch(@Body Match match, @QueryMap Map<String, Integer> options, Callback<PresentMatchesActivity.MatchflareScore> cb);
 
         @POST("/gcm/registrationId")
-        void updateRegistrationId(@Body Person person, Callback<StringResponse> cb);
+        void updateGoogleRegistrationId(@Body Person person, Callback<StringResponse> cb);
 
-        @GET("/notifications")
-        void getNotifications(@QueryMap Map<String, Integer> options, Callback<Notifications> cb);
+//        @GET("/notifications")
+//        void getNotifications(@QueryMap Map<String, Integer> options, Callback<Notifications> cb);
 
         @GET("/notificationLists")
         void getNotificationLists(@QueryMap Map<String, Integer> options, Callback<NotificationLists> cb);
@@ -62,10 +62,10 @@ public interface RestService {
         void getPicture(@QueryMap Map<String, String> options, Callback<StringResponse> cb);
 
         @GET("/getScore")
-        void getScore(@QueryMap Map<String, Integer> options, Callback<Integer> cb);
+        void getScore(@QueryMap Map<String, Integer> options, Callback<PresentMatchesActivity.MatchflareScore> cb);
 
         @GET("/hasUnread")
-        void hasUnread(@QueryMap Map<String, Integer> options, Callback<Boolean> cb);
+        void hasUnread(@QueryMap Map<String, Integer> options, Callback<EvaluateActivity.UnseenObject> cb);
 
         @POST("/removeContact")
         void removeContact(@QueryMap Map<String, Integer> options, Callback<StringResponse> cb);
