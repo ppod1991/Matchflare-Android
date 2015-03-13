@@ -6,24 +6,18 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
 
-import java.util.Set;
+import com.peapod.matchflare.Objects.Person;
 
-/**
- * Created by piyushpoddar on 12/17/14.
+/*
+ * DialogFragment that handles when a user long presses the Matcher for blocking or chatting
  */
 public class MatcherOptionsDialog extends DialogFragment {
 
+    //Dialog variables
     Person matcher;
     Boolean isAnonymous;
 
@@ -37,18 +31,17 @@ public class MatcherOptionsDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
+        View optionsView = inflater.inflate(R.layout.dialog_matcher_options, null); // Pass null as the parent view because its going in the dialog layout
 
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
-        View optionsView = inflater.inflate(R.layout.dialog_matcher_options, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(optionsView);
 
+        //Retrieve components
         Button blockMatcherButton = (Button) optionsView.findViewById(R.id.block_matcher_button);
         Button chatWithMatcherButton = (Button) optionsView.findViewById(R.id.chat_with_matcher_button);
 
+        //Style the components
         Style.toOpenSans(getActivity(),blockMatcherButton,"light");
         Style.toOpenSans(getActivity(),chatWithMatcherButton,"light");
         if (isAnonymous) {
@@ -60,6 +53,7 @@ public class MatcherOptionsDialog extends DialogFragment {
             chatWithMatcherButton.setText("Ask " + matcher.guessed_full_name + " a question!");
         }
 
+        //Set listeners
         blockMatcherButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -99,11 +93,14 @@ public class MatcherOptionsDialog extends DialogFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
         // Verify that the host activity implements the callback interface
         try {
+
             // Instantiate the NoticeDialogListener so we can send events to the host
             mListener = (MatcherOptionsDialogListener) activity;
         } catch (ClassCastException e) {
+
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
                     + " must implement MatcherOptionsDialogListener");

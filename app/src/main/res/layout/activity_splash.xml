@@ -18,27 +18,36 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:visibility="gone">
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/pager"
+        <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_above="@+id/splash_buttons" />
+            android:orientation="vertical"
+            android:layout_above="@+id/splash_buttons">
 
-        <com.viewpagerindicator.CirclePageIndicator
-            android:id="@+id/indicator"
-            android:padding="10dip"
-            android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
-            android:textColor="#2FB3E3"
-            app:footerColor="#2FB3E3"
-            app:footerLineHeight="1dp"
-            app:footerIndicatorHeight="3dp"
-            app:footerIndicatorStyle="underline"
-            app:selectedColor="#FFFFFF"
-            app:selectedBold="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_above="@+id/splash_buttons" />
+            <android.support.v4.view.ViewPager
+                android:id="@+id/pager"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_above="@+id/splash_buttons" />
+
+            <com.viewpagerindicator.CirclePageIndicator
+                android:id="@+id/indicator"
+                android:padding="10dip"
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:textColor="#2FB3E3"
+                app:footerColor="#2FB3E3"
+                app:footerLineHeight="1dp"
+                app:footerIndicatorHeight="3dp"
+                app:footerIndicatorStyle="underline"
+                app:selectedColor="#FFFFFF"
+                app:selectedBold="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+ />
+
+        </LinearLayout>
+
 
         <LinearLayout
             android:orientation="horizontal"
@@ -97,7 +106,8 @@
             android:layout_alignEnd="@+id/spelled_logo"
             android:scaleType="centerInside"
             android:layout_alignParentEnd="true"
-            android:visibility="visible" />
+            android:visibility="visible"
+            android:layout_marginTop="10dp" />
 
     </RelativeLayout>
 

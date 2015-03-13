@@ -1,9 +1,12 @@
 package com.peapod.matchflare;
 
+import com.peapod.matchflare.Objects.Person;
+
 import java.io.Serializable;
 
-/**
- * Created by piyushpoddar on 10/27/14.
+
+/*
+ * Match object for use with Retrofit
  */
 public class Match implements Serializable {
 
@@ -18,6 +21,7 @@ public class Match implements Serializable {
     String created_at;
     Boolean has_unseen;
     boolean wasEdited = false;  //Keeps track as to whether the user edited the current match. If edited, then the user cannot rate either matchee
+
     public String toString() {
         return first_matchee.guessed_full_name + " and " + second_matchee.guessed_full_name;
     }

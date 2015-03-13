@@ -16,6 +16,9 @@
             <item android:id="@+id/update_profile"
                 android:title="Update Profile"
                 android:showAsAction="never"/>
+            <item android:id="@+id/stop_matches"
+                android:title="Stop Receiving Matches"
+                android:showAsAction="never"/>
         </menu>
     </item>
 

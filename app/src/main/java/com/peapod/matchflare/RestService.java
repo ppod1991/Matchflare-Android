@@ -1,11 +1,14 @@
 package com.peapod.matchflare;
 
-import android.support.annotation.StringRes;
+import com.peapod.matchflare.Objects.Contacts;
+import com.peapod.matchflare.Objects.EvaluateResponse;
+import com.peapod.matchflare.Objects.NotificationLists;
+import com.peapod.matchflare.Objects.Person;
+import com.peapod.matchflare.Objects.StringResponse;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 import retrofit.Callback;
 import retrofit.http.Body;
@@ -13,10 +16,7 @@ import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.QueryMap;
 
-
-/**
- * Created by piyushpoddar on 10/24/14.
- */
+//Retrofit HTTP Method Declarations
 public interface RestService {
 
         @POST("/processContacts")
@@ -33,9 +33,6 @@ public interface RestService {
 
         @POST("/gcm/registrationId")
         void updateGoogleRegistrationId(@Body Person person, Callback<StringResponse> cb);
-
-//        @GET("/notifications")
-//        void getNotifications(@QueryMap Map<String, Integer> options, Callback<Notifications> cb);
 
         @GET("/notificationLists")
         void getNotificationLists(@QueryMap Map<String, Integer> options, Callback<NotificationLists> cb);
@@ -76,4 +73,6 @@ public interface RestService {
         @POST("/updateProfile")
         void updateProfile(@Body Person this_user, Callback<Person> cb);
 
+        @POST("/preventMatches")
+        void preventMatches(@QueryMap Map<String, Integer> options, Callback<StringResponse> cb);
 }

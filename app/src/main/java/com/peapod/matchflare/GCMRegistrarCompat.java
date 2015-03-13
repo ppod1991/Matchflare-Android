@@ -13,8 +13,6 @@ package com.peapod.matchflare;
  From _The Busy Coder's Guide to Android Development_
  http://commonsware.com/Android
  */
-
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,6 +29,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.StandardExceptionParser;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class GCMRegistrarCompat {
@@ -61,15 +63,27 @@ public class GCMRegistrarCompat {
         PackageManager packageManager=context.getPackageManager();
         String packageName=context.getPackageName();
         String permissionName=packageName + ".permission.C2D_MESSAGE";
-        // check permission
+        // check permissions
         try {
             packageManager.getPermissionInfo(permissionName,
                     PackageManager.GET_PERMISSIONS);
         }
         catch (NameNotFoundException e) {
+
+            Tracker t = ((Global) context.getApplicationContext()).getTracker();
+
+            t.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription("Application does not define permission "
+                            + permissionName)
+                    .setFatal(false)
+                    .build());
+
             throw new IllegalStateException(
                     "Application does not define permission "
                             + permissionName);
+
+
+
         }
         // check receivers
         PackageInfo receiversInfo;
@@ -79,14 +93,33 @@ public class GCMRegistrarCompat {
                             PackageManager.GET_RECEIVERS);
         }
         catch (NameNotFoundException e) {
+
+            //Google Analytics
+            Tracker t = ((Global) context.getApplicationContext()).getTracker();
+            t.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription("Could not get receivers for package "
+                            + packageName)
+                    .setFatal(false)
+                    .build());
+
             throw new IllegalStateException(
                     "Could not get receivers for package "
                             + packageName);
         }
         ActivityInfo[] receivers=receiversInfo.receivers;
         if (receivers == null || receivers.length == 0) {
+
+            //Google Analytics
+            Tracker t = ((Global) context.getApplicationContext()).getTracker();
+            t.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription("No receiver for package "
+                            + packageName)
+                    .setFatal(false)
+                    .build());
+
             throw new IllegalStateException("No receiver for package "
                     + packageName);
+
         }
         if (Log.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "number of receivers for " + packageName + ": "
@@ -99,6 +132,15 @@ public class GCMRegistrarCompat {
             }
         }
         if (allowedReceivers.isEmpty()) {
+
+            Tracker t = ((Global) context.getApplicationContext()).getTracker();
+
+            t.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription("No receiver allowed to receive "
+                            + PERMISSION_GCM_INTENTS)
+                    .setFatal(false)
+                    .build());
+
             throw new IllegalStateException("No receiver allowed to receive "
                     + PERMISSION_GCM_INTENTS);
         }
@@ -116,6 +158,15 @@ public class GCMRegistrarCompat {
                 pm.queryBroadcastReceivers(intent,
                         PackageManager.GET_INTENT_FILTERS);
         if (receivers.isEmpty()) {
+
+            //Google Analytics
+            Tracker t = ((Global) context.getApplicationContext()).getTracker();
+            t.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription("No receivers for action "
+                            + action)
+                    .setFatal(false)
+                    .build());
+
             throw new IllegalStateException("No receivers for action "
                     + action);
         }
@@ -127,6 +178,14 @@ public class GCMRegistrarCompat {
         for (ResolveInfo receiver : receivers) {
             String name=receiver.activityInfo.name;
             if (!allowedReceivers.contains(name)) {
+
+                Tracker t = ((Global) context.getApplicationContext()).getTracker();
+                t.send(new HitBuilders.ExceptionBuilder()
+                        .setDescription("Receiver " + name
+                                + " is not set with permission " + PERMISSION_GCM_INTENTS)
+                        .setFatal(false)
+                        .build());
+
                 throw new IllegalStateException("Receiver " + name
                         + " is not set with permission " + PERMISSION_GCM_INTENTS);
             }
@@ -185,6 +244,14 @@ public class GCMRegistrarCompat {
         }
         catch (NameNotFoundException e) {
             // should never happen
+
+            Tracker t = ((Global) context.getApplicationContext()).getTracker();
+
+            t.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription("Could not get package name: " + e)
+                    .setFatal(false)
+                    .build());
+
             throw new RuntimeException("Could not get package name: " + e);
         }
     }
@@ -229,6 +296,15 @@ public class GCMRegistrarCompat {
             catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+
+                Tracker t = ((Global) context.getApplicationContext()).getTracker();
+
+                t.send(new HitBuilders.ExceptionBuilder()
+                        .setDescription("(GCMRegistrarCompat) Could not register the id: " +
+                                new StandardExceptionParser(context, null)
+                                        .getDescription(Thread.currentThread().getName(), e))
+                        .setFatal(false)
+                        .build());
             }
 
             return(regid);
@@ -247,6 +323,16 @@ public class GCMRegistrarCompat {
         protected void onError(IOException e) {
             Log.e(getClass().getSimpleName(),
                     "Exception registering for GCM", e);
+
+            Tracker t = ((Global) context.getApplicationContext()).getTracker();
+
+            t.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription("Exception registering for GCM" +
+                            new StandardExceptionParser(context, null)
+                                    .getDescription(Thread.currentThread().getName(), e))
+                    .setFatal(false)
+                    .build());
+
         }
     }
 }

@@ -7,11 +7,8 @@ import android.graphics.Paint;
 
 import com.squareup.picasso.Transformation;
 
-/**
- * Created by piyushpoddar on 12/8/14.
- */
+//Circle transformation to turn Rectangular Image to Circle for Picaso
 public class CircleTransform implements Transformation {
-
 
     int x;
     int y;

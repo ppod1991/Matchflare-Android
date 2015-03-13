@@ -6,43 +6,45 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.StandardExceptionParser;
+import com.google.android.gms.analytics.Tracker;
 
-
+/*
+ * DialogFragment to handle phone number input and sending of verification text message
+ */
 public class PhoneNumberDialog extends DialogFragment {
 
-
-    public EditText phoneNumberField;
+    EditText phoneNumberField;
+    PhoneNumberDialogListener mListener;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
-        View dialogView = inflater.inflate(R.layout.dialog_phone_number, null);
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_phone_number, null);         // Pass null as the parent view because its going in the dialog layout
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(dialogView);
 
+        //Retrieve dialog components
         phoneNumberField = (EditText) dialogView.findViewById(R.id.phone_number_field);
-        Style.toOpenSans(getActivity(),phoneNumberField,"light");
         TextView instructions = (TextView) dialogView.findViewById(R.id.phone_number_instructions);
+
+        //Stylize the components
+        Style.toOpenSans(getActivity(),phoneNumberField,"light");
         Style.toOpenSans(getActivity(),instructions,"light");
 
-        try {
+        try {  //Try to auto-extract & pre-fill the phone number
             TelephonyManager tMgr = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
             String mPhoneNumber = tMgr.getLine1Number();
             Log.e("Phone found:", mPhoneNumber);
@@ -52,7 +54,15 @@ public class PhoneNumberDialog extends DialogFragment {
         }
         catch (Exception e) {
             Log.e("No phone number found:", e.toString());
-            //No phone number found
+
+            //Google analytics
+            Tracker t = ((Global) this.getActivity().getApplication()).getTracker();
+            t.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription("No autofill phone number found" +
+                            new StandardExceptionParser(this.getActivity(), null)
+                                    .getDescription(Thread.currentThread().getName(), e))
+                    .setFatal(false)
+                    .build());
         }
 
         // Add action buttons
@@ -69,7 +79,6 @@ public class PhoneNumberDialog extends DialogFragment {
             }
         });
 
-
         return builder.create();
     }
 
@@ -78,21 +87,22 @@ public class PhoneNumberDialog extends DialogFragment {
         public void onDialogNegativeClick(DialogFragment dialog);
     }
 
+    //Gets the phone number from the text field
     public String getRawPhoneNumber() {
        return  phoneNumberField.getText().toString();
     }
 
-    PhoneNumberDialogListener mListener;
-
-    // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
         // Verify that the host activity implements the callback interface
         try {
+
             // Instantiate the NoticeDialogListener so we can send events to the host
             mListener = (PhoneNumberDialogListener) activity;
         } catch (ClassCastException e) {
+
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
                     + " must implement PhoneNumberDialogListener");

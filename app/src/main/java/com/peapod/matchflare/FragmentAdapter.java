@@ -1,32 +1,26 @@
 package com.peapod.matchflare;
 
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.viewpagerindicator.IconPagerAdapter;
 
-/**
- * Created by piyushpoddar on 12/18/14.
- */
+//Handle different pages for the instruction pager
 public class FragmentAdapter extends FragmentPagerAdapter implements IconPagerAdapter {
 
     public FragmentAdapter(FragmentManager fm) {
         super(fm);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
     public int getIconResId(int index) {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public Fragment getItem(int position)
     {
-        // TODO Auto-generated method stub
         Fragment fragment = new FirstSplashFragment();
         switch(position){
             case 0:
@@ -44,7 +38,6 @@ public class FragmentAdapter extends FragmentPagerAdapter implements IconPagerAd
 
     @Override
     public int getCount() {
-        // TODO Auto-generated method stub
         return 3;
     }
 

@@ -4,15 +4,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -20,13 +17,16 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.peapod.matchflare.Objects.Person;
+
 import java.util.Set;
 
-/**
- * Created by piyushpoddar on 12/15/14.
+/*
+ * DialogFragment that's triggered when a user long-presses a match for searching or removing
  */
 public class MatcheeOptionsDialog extends DialogFragment {
 
+    //Dialog variables
     ArrayAdapter<Person> listAdapter;
     boolean isFirstMatchee;
     Person chosenMatchee;
@@ -41,23 +41,25 @@ public class MatcheeOptionsDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
+        View optionsView = inflater.inflate(R.layout.dialog_matchee_options, null); // Pass null as the parent view because its going in the dialog layout
 
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
-        View optionsView = inflater.inflate(R.layout.dialog_matchee_options, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(optionsView);
 
+        //Retrieve dialog components
         final ListView optionsList = (ListView) optionsView.findViewById(R.id.matchee_options_list);
         EditText searchBox = (EditText) optionsView.findViewById(R.id.contact_search_bar);
         TextView orText = (TextView) optionsView.findViewById(R.id.or_text_view);
         Button stopShowingContactButton = (Button) optionsView.findViewById(R.id.stop_showing_button);
+
+        //Style the elements
         Style.toOpenSans(getActivity(),orText,"light");
         Style.toOpenSans(getActivity(),stopShowingContactButton,"light");
         Style.toOpenSans(getActivity(),searchBox,"light");
         stopShowingContactButton.setText("Stop Showing " + chosenMatchee.guessed_full_name);
+        
+        //Set listeners
         stopShowingContactButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -65,11 +67,13 @@ public class MatcheeOptionsDialog extends DialogFragment {
                 MatcheeOptionsDialog.this.getDialog().cancel();
             }
         });
+
+        //Get this user's contacts for displaying in list
         Set<Person> contacts = ((Global) getActivity().getApplication()).thisUser.contact_objects;
         listAdapter = new OptionsListAdapter(getActivity(), R.layout.options_list_item,contacts.toArray(new Person[contacts.size()]));
-
         optionsList.setAdapter(listAdapter);
 
+        //Filter results while typing
         searchBox.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -81,13 +85,12 @@ public class MatcheeOptionsDialog extends DialogFragment {
             @Override
             public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
                                           int arg3) {
-                // TODO Auto-generated method stub
-
+                //Do nothing
             }
 
             @Override
             public void afterTextChanged(Editable arg0) {
-                // TODO Auto-generated method stub
+                //Do nothing
             }
         });
 
@@ -123,11 +126,13 @@ public class MatcheeOptionsDialog extends DialogFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
             mListener = (MatcheeOptionsDialogListener) activity;
         } catch (ClassCastException e) {
+
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
                     + " must implement MatcheeOptionsDialogListener");

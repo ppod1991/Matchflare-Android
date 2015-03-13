@@ -18,12 +18,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.peapod.matchflare.Objects.StringResponse;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -54,20 +51,18 @@ public class GCMBroadcastReceiverCompat extends BroadcastReceiver implements Cal
             RestService ui = restAdapter.create(RestService.class);
             ui.updateGoogleRegistrationId(((Global) context.getApplicationContext()).thisUser, this);
 
-      /* Do what ever you want with the regId eg. send it to your server */
         }
-
         WakefulIntentService.sendWakefulWork(context, intent);
     }
 
     public void failure(RetrofitError err)
     {
-        Log.e("Error Updating Registration Id:", err.toString());
+        Log.e("Error Updating Reg Id:", err.toString());
     }
 
     @Override
     public void success(StringResponse response, Response arg1)
     {
-        Log.e("Registration Id successfully updated:", response.toString());
+        Log.e("Reg Id updated:", response.toString());
     }
 }

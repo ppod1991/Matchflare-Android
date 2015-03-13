@@ -13,7 +13,6 @@ package com.peapod.matchflare;
  From _The Busy Coder's Guide to Android Development_
  http://commonsware.com/Android
  */
-
 import android.content.Intent;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.google.android.gms.gcm.GoogleCloudMessaging;

@@ -18,13 +18,15 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
-import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.StandardExceptionParser;
+import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
+import com.peapod.matchflare.Objects.Notification;
 
 public class GCMIntentService extends GCMBaseIntentServiceCompat {
 
@@ -42,6 +44,13 @@ public class GCMIntentService extends GCMBaseIntentServiceCompat {
     @Override
     protected void onError(Intent message) {
         dumpEvent("onError", message);
+
+        //Google Analytics
+        Tracker t = ((Global) getApplication()).getTracker();
+        t.send(new HitBuilders.ExceptionBuilder()
+                .setDescription("Received GCM Error Message" + message)
+                .setFatal(false)
+                .build());
     }
 
     @Override
@@ -52,15 +61,20 @@ public class GCMIntentService extends GCMBaseIntentServiceCompat {
     private void dumpEvent(String event, Intent message) {
 
         if (event.equals("onMessage")) {
+
+            //Handled received remote notification
             Intent intent=new Intent("com.peapod.matchflare.push_notification");
             String jsonData = message.getStringExtra("data");
             Gson gson = new Gson();
+
             try {
                 Notification notification = gson.fromJson(jsonData,Notification.class);
                 if (notification != null) {
-                    intent.putExtra("notification", notification);
 
+                    intent.putExtra("notification", notification);
                     String notificationTitle = "Matchflare Notification!";
+
+                    //Set notifcation title based on notification type
                     if (notification.notification_type != null) {
                         if (notification.notification_type.equals("USER_REMINDER")) {
                             notificationTitle = "What do you think of them?";
@@ -88,7 +102,7 @@ public class GCMIntentService extends GCMBaseIntentServiceCompat {
                         }
                     }
 
-
+                    //If no local activity received the notification, then set phone notification
                     if (!LocalBroadcastManager.getInstance(this).sendBroadcast(intent)) {
                         NotificationCompat.Builder b = new NotificationCompat.Builder(this);
                         Intent ui = new Intent(this, SplashActivity.class);
@@ -102,7 +116,6 @@ public class GCMIntentService extends GCMBaseIntentServiceCompat {
                                 .setTicker(notification.push_message)
                                 .setLights(Color.argb(255,250,69,118),2000,500)
                                 .setVibrate(vibrate)
-                                        //.setSound(Uri.parse("android.resource://com.peapod.matchflare/" + R.raw.notification_sound))
                                 .setContentIntent(PendingIntent.getActivity(this, 0, ui, PendingIntent.FLAG_UPDATE_CURRENT));
 
                         NotificationManager mgr =
@@ -113,16 +126,17 @@ public class GCMIntentService extends GCMBaseIntentServiceCompat {
 
             }
             catch (Error e) {
-                Log.e("Could not parse notification push message", e.toString());
+                Log.e("Cant parse notification", e.toString());
+
+                //Google Analytics
+                Tracker t = ((Global) getApplication()).getTracker();
+                t.send(new HitBuilders.ExceptionBuilder()
+                        .setDescription("(GCMIntentService) Could not parse notification push message: " +
+                                new StandardExceptionParser(this, null)
+                                        .getDescription(Thread.currentThread().getName(), e))
+                        .setFatal(false)
+                        .build());
             }
         }
-
-//        Bundle extras=message.getExtras();
-//        for (String key : extras.keySet()) {
-//            Log.d(getClass().getSimpleName(),
-//                    String.format("%s: %s=%s", event, key,
-//                            extras.getString(key)));
-//
-//        }
     }
 }

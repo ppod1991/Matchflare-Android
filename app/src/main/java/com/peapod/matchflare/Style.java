@@ -9,39 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
-
 public class Style {
-
-//    static char[] smallCaps = new char[]
-//            {
-//                    '\uf761', //A
-//                    '\uf762',
-//                    '\uf763',
-//                    '\uf764',
-//                    '\uf765',
-//                    '\uf766',
-//                    '\uf767',
-//                    '\uf768',
-//                    '\uf769',
-//                    '\uf76A',
-//                    '\uf76B',
-//                    '\uf76C',
-//                    '\uf76D',
-//                    '\uf76E',
-//                    '\uf76F',
-//                    '\uf770',
-//                    '\uf771',
-//                    '\uf772',
-//                    '\uf773',
-//                    '\uf774',
-//                    '\uf775',
-//                    '\uf776',
-//                    '\uf777',
-//                    '\uf778',
-//                    '\uf779',
-//                    '\uf77A'   //Z
-//            };
 
     public static void makeToast(Activity a, CharSequence myText) {
         LayoutInflater inflater = a.getLayoutInflater();
@@ -72,16 +40,5 @@ public class Style {
         ((TextView) v).setTypeface(typeface);
     }
 
-
-
-//    public static String toSmallCaps(String input) {
-//        char[] chars = input.toCharArray();
-//        for(int i = 0; i < chars.length; i++) {
-//            if(chars[i] >= 'a' && chars[i] <= 'z') {
-//                chars[i] = smallCaps[chars[i] - 'a'];
-//            }
-//        }
-//        return String.valueOf(chars);
-//    }
 }
 

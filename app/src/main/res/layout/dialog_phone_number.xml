@@ -1,10 +1,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:id="@+id/phone_dialog"
+    android:paddingBottom="5px">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Phone Number"
@@ -12,7 +14,8 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginBottom="4dp"
-        android:id="@+id/phone_number_instructions" />
+        android:id="@+id/phone_number_instructions"
+        android:gravity="center_horizontal" />
 
     <EditText
         android:id="@+id/phone_number_field"
@@ -25,4 +28,18 @@
         android:fontFamily="sans-serif"
         android:hint="i.e. 609 123 4567"
         android:inputType="phone" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Msg&amp;Data Rates May Apply. T&amp;C available at matchflare.com/#/privacy"
+        android:id="@+id/textView"
+        android:layout_gravity="center_horizontal"
+        android:textAlignment="center"
+        android:gravity="center_horizontal"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        android:textColor="@color/light_gray"
+        android:layout_marginBottom="5dp" />
 </LinearLayout>
