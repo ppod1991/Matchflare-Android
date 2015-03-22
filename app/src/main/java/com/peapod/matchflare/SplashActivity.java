@@ -1,8 +1,12 @@
 package com.peapod.matchflare;
 
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -12,11 +16,13 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
@@ -186,7 +192,7 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
             }
         });
 
-        //Listen for eaching the last page and change button text on last page.
+        //Listen for reaching the last page and change button text on last page.
         ViewPager.OnPageChangeListener pageChangeListener = new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -214,29 +220,60 @@ public class SplashActivity extends FragmentActivity implements Callback<Person>
     public void onResume() {
         super.onResume();
 
+        //Check if this is the first match ever. If so, then alert with instructions
+        final SharedPreferences prefs = this.getSharedPreferences(
+                "com.peapod.matchflare", Context.MODE_PRIVATE);
+        final String firstAccessKey = "com.example.app.IS_FIRST_ACCESS";
+        boolean isNotFirstAccess = prefs.getBoolean(firstAccessKey,false);
+
+        if (!isNotFirstAccess) { //Show instructional alert
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle("Welcome to Matchflare!")
+                    .setMessage("Matchflare uses your phone contact list to find pairs of your friends that might be good together. Matchflare will NEVER share this info and will only use it to provide better matches. Is that ok?")
+                    .setPositiveButton("Yes!", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            //Save new user preference
+                            prefs.edit().putBoolean(firstAccessKey, true).apply();
+                            tryAccessToken();
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .show();
+
+            TextView messageView = (TextView) dialog.findViewById(android.R.id.message);
+            messageView.setGravity(Gravity.CENTER);
+        } else {
+            tryAccessToken();
+        }
+    }
+
+
+    public void tryAccessToken() {
         //Check if access token exists and is valid
         String accessToken = ((Global) getApplication()).getAccessToken();
         if (accessToken != null) {
             Map options = new HashMap<String, String>();
-            options.put("access_token",accessToken);
-            ((Global)getApplication()).ui.verifyAccessToken(options, this);
-        }
-        else { //If no access token, then begin processing contacts and show instructions
+            options.put("access_token", accessToken);
+            ((Global) getApplication()).ui.verifyAccessToken(options, SplashActivity.this);
+        } else { //If no access token, then begin processing contacts and show instructions
             splashLogo.setVisibility(View.GONE);
             instructionPager.setVisibility(View.VISIBLE);
             ProcessContactsTask task = new ProcessContactsTask();
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             else
                 task.execute();
         }
 
         //Google Analytics
-        Tracker t = ((Global) this.getApplication()).getTracker();
+        Tracker t = ((Global) SplashActivity.this.getApplication()).getTracker();
         t.setScreenName("SplashActivity");
         t.send(new HitBuilders.AppViewBuilder().build());
     }
-
     class ProcessContactsTask extends AsyncTask<Integer, Void, Boolean>{
 
         Integer contactId;

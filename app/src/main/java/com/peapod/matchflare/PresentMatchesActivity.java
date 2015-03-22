@@ -119,16 +119,12 @@ public class PresentMatchesActivity extends Activity implements MatcheeOptionsDi
         secondImage = (ImageView) findViewById(R.id.second_matchee_image_view);
         resultDisplay = (TextSwitcher) findViewById(R.id.result_text);
         scoreDisplay = (TextSwitcher) findViewById(R.id.score_view);
-        firstContactTextview = (TextView) currentLayout.findViewById(R.id.first_contact_textview);
-        secondContactTextview = (TextView) currentLayout.findViewById(R.id.second_contact_textview);
         anonymousCheckbox = (CheckBox) findViewById(R.id.anonymous_checkbox);
         passButton = (ImageView) findViewById(R.id.pass_button);
         matchButton = (ImageView) findViewById(R.id.match_button);
 
         //Style the components
         Style.toOpenSans(this, display, "light");
-        Style.toOpenSans(this,firstContactTextview,"light");
-        Style.toOpenSans(this,secondContactTextview,"light");
         Style.toOpenSans(this,anonymousCheckbox,"light");
 
         root.setVisibility(View.GONE);
@@ -198,6 +194,10 @@ public class PresentMatchesActivity extends Activity implements MatcheeOptionsDi
         currentLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.sliding_match, null);
         root.addView(currentLayout); //Add first sliding match layout to main layout
         initialX = currentLayout.getX();
+        firstContactTextview = (TextView) currentLayout.findViewById(R.id.first_contact_textview);
+        secondContactTextview = (TextView) currentLayout.findViewById(R.id.second_contact_textview);
+        Style.toOpenSans(this,firstContactTextview,"light");
+        Style.toOpenSans(this,secondContactTextview,"light");
 
         //Retrieve first sliding match layout components
         firstImage = (ImageView) currentLayout.findViewById(R.id.first_matchee_image_view);
